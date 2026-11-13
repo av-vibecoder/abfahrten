@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abfahrten Pistoriusstraße</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ea; --panel:#ffffff; --panel-2:#f8f7f2; --ink:#16161a; --muted:#6b6a66; --line:#e4e1d8;
+  --accent:#f0d722; --accent-ink:#16161a; --ok:#1a8f4a; --warn:#c96a00; --bad:#c62828;
+  --tram:#be1414; --bus:#a5027d; --subway:#115d91; --suburban:#008d4f; --regional:#e3000f; --night:#2b2b6e;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e0f12; --panel:#17181d; --panel-2:#1d1f25; --ink:#f2f1ec; --muted:#9a9a9f; --line:#2a2c33;
+    --ok:#3ccf7a; --warn:#ffae3d; --bad:#ff5b5b; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e0f12; --panel:#17181d; --panel-2:#1d1f25; --ink:#f2f1ec; --muted:#9a9a9f; --line:#2a2c33;
+  --ok:#3ccf7a; --warn:#ffae3d; --bad:#ff5b5b; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:48px;height:48px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:14px;margin-top:3px}
+.clock{font-family:"JetBrains Mono",monospace;font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.clock small{font-size:18px;color:var(--muted)}
+.right{text-align:right}
+.status{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 var(--ok);animation:pulse 2s infinite}
+.dot.err{background:var(--bad);animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 13px Inter,sans-serif;padding:7px 12px;border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--ink)}
+.label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+
+.next{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:18px}
+.next h2,.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 12px;font-weight:700}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.chip{display:flex;gap:12px;align-items:center;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.chip .meta{min-width:0;flex:1}
+.chip .dir{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .from{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .go{text-align:right;flex:none}
+.chip .go b{display:block;font-family:"JetBrains Mono",monospace;font-size:18px}
+.chip .go span{font-size:11px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.card-head h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.card-head .lines{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.walk{flex:none;text-align:center;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:6px 10px;min-width:64px}
+.walk b{display:block;font-size:20px;line-height:1.1;font-family:"JetBrains Mono",monospace}
+.walk span{font-size:11px;font-weight:600}
+.walk small{display:block;font-size:10px;opacity:.7}
+
+table{width:100%;border-collapse:collapse}
+td{padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:15px}
+tr:last-child td{border-bottom:0}
+td.l{width:62px;padding-right:0}
+td.d{font-weight:600;max-width:0;width:100%}
+td.d .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.d .s{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+td.m{text-align:right;white-space:nowrap;font-family:"JetBrains Mono",monospace}
+td.m b{font-size:20px}
+td.m .c{font-size:12px;color:var(--muted);display:block}
+td.lv{text-align:right;white-space:nowrap;width:1%}
+tr.missed td{opacity:.38}
+tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
+.late{color:var(--warn);font-weight:700}
+.ontime{color:var(--ok)}
+
+.badge{display:inline-grid;place-items:center;min-width:44px;height:26px;padding:0 7px;border-radius:6px;color:#fff;font-weight:800;font-size:13px;letter-spacing:-.01em}
+.badge.sm{min-width:34px;height:20px;font-size:11px;border-radius:5px;padding:0 5px}
+.badge.tram{background:var(--tram)}
+.badge.bus{background:var(--bus);border-radius:13px}
+.badge.bus.sm{border-radius:10px}
+.badge.subway{background:var(--subway)}
+.badge.suburban{background:var(--suburban);border-radius:13px}
+.badge.regional{background:var(--regional)}
+.badge.night{background:var(--night)}
+
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted)}
+.pill.now{background:var(--bad);border-color:var(--bad);color:#fff;animation:blink 1s steps(2,start) infinite}
+.pill.soon{background:color-mix(in srgb,var(--warn) 18%,transparent);border-color:var(--warn);color:var(--warn)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
+@keyframes blink{to{opacity:.55}}
+.empty,.err{padding:24px 16px;color:var(--muted);font-size:14px;text-align:center}
+.skeleton{height:46px;margin:8px 16px;border-radius:8px;background:linear-gradient(90deg,var(--panel-2),var(--line),var(--panel-2));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.6}
+footer a{color:inherit}
+.icon-btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 12px;font:600 13px Inter,sans-serif;cursor:pointer}
+
+@media (max-width:560px){
+  .clock{font-size:30px}
+  h1{font-size:20px}
+  td{padding:9px 12px;font-size:14px}
+  td.m b{font-size:17px}
+  .right{text-align:left}
+  .status{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">🚋</div>
+      <div>
+        <h1>Abfahrten ab Pistoriusstraße 62</h1>
+        <div class="sub">13086 Berlin-Weißensee · Live-Daten von BVG/VBB · inkl. Fußweg</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="clock" id="clock">--:--<small>:--</small></div>
+      <div class="status"><span class="dot" id="dot"></span><span id="status">Lade…</span></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <span class="label">Tempo</span>
+    <div class="seg" id="pace">
+      <button data-v="65">Gemütlich</button>
+      <button data-v="80" class="on">Normal</button>
+      <button data-v="100">Zügig</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="hideMissed"> Nicht erreichbare ausblenden</label>
+    <button class="icon-btn" id="refresh" title="Jetzt aktualisieren">↻ Aktualisieren</button>
+    <button class="icon-btn" id="theme" title="Hell/Dunkel">◐</button>
+  </div>
+
+  <section class="next">
+    <h2>Nächste erreichbare Verbindungen</h2>
+    <div class="chips" id="chips"><div class="skeleton" style="margin:0"></div></div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Fußwege geschätzt aus Luftlinie × 1,35 (Umwegfaktor) bei gewähltem Tempo. „Los in“ = Minuten bis du losgehen musst, um die Abfahrt zu erreichen.
+    Echtzeitdaten über <a href="https://v6.vbb.transport.rest" target="_blank" rel="noopener">v6.vbb.transport.rest</a> (HAFAS, BVG/VBB). Aktualisierung alle 30&nbsp;Sekunden.
+  </footer>
+</div>
+
+<script>
+const HOME = { lat: 52.555928, lon: 13.437714 };
+const STOPS = [
+  { id: "900140009", name: "Hamburger Platz",                 lat: null, lon: null, dist: 92 },
+  { id: "900141506", name: "Am Steinberg",                    lat: null, lon: null, dist: 404 },
+  { id: "900140503", name: "Heinersdorfer Str./Am Steinberg", lat: null, lon: null, dist: 320 },
+  { id: "900140017", name: "Gustav-Adolf-Str./Langhansstr.",   lat: 52.553609, lon: 13.434729 },
+];
+const APIS = ["https://v6.vbb.transport.rest", "https://v6.bvg.transport.rest"];
+const DURATION = 45, RESULTS = 14, REFRESH_MS = 30000, DETOUR = 1.35;
+
+let pace = 80;                       // m/min
+let hideMissed = false;
+const data = {};                     // stopId -> {deps, error}
+try { pace = +localStorage.getItem("pace") || 80; hideMissed = localStorage.getItem("hideMissed") === "1"; } catch {}
+
+function haversine(a, b){
+  const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLat = toR(b.lat - a.lat), dLon = toR(b.lon - a.lon);
+  const h = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function distOf(s){ return s.lat != null ? haversine(HOME, s) : s.dist; }
+function walkMin(s){ return Math.max(1, Math.ceil(distOf(s) * DETOUR / pace)); }
+
+async function fetchJSON(path){
+  let lastErr;
+  for (const base of APIS){
+    try{
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 12000);
+      const r = await fetch(base + path, { signal: ctl.signal }); clearTimeout(t);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+
+async function loadStop(s){
+  try{
+    const j = await fetchJSON(`/stops/${s.id}/departures?duration=${DURATION}&results=${RESULTS}&remarks=false&language=de`);
+    const deps = (j.departures || j);
+    const loc = deps[0]?.stop?.location;
+    if (loc && s.lat == null){ s.lat = loc.latitude; s.lon = loc.longitude; }
+    data[s.id] = { deps, error: null };
+  }catch(e){
+    data[s.id] = { deps: data[s.id]?.deps || [], error: e.message || "Fehler" };
+  }
+}
+
+const dot = document.getElementById("dot"), statusEl = document.getElementById("status");
+let lastUpdate = null;
+async function refresh(){
+  statusEl.textContent = "Aktualisiere…";
+  await Promise.all(STOPS.map(loadStop));
+  lastUpdate = new Date();
+  const anyErr = STOPS.some(s => data[s.id]?.error);
+  dot.classList.toggle("err", anyErr);
+  render();
+}
+
+function productOf(line){
+  if (!line) return "bus";
+  if (/^N\d/.test(line.name) && line.product === "bus") return "night";
+  return line.product || "bus";
+}
+function badge(line, sm){
+  const p = productOf(line);
+  return `<span class="badge ${p === "night" ? "bus night" : p}${sm ? " sm" : ""}">${esc(line?.name || "?")}</span>`;
+}
+function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function hm(d){ return d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }); }
+function cleanDir(d){ return (d || "").replace(/\s*\(Berlin\)\s*$/, "").replace(/^S\+U |^S |^U /, m => m); }
+
+function enrich(dep, s, now){
+  const when = new Date(dep.when || dep.plannedWhen);
+  const planned = new Date(dep.plannedWhen || dep.when);
+  const mins = (when - now) / 60000;
+  const walk = walkMin(s);
+  const leave = Math.floor(mins - walk);
+  return { dep, s, when, planned, mins, walk, leave, missed: leave < 0, cancelled: !!dep.cancelled,
+           delay: dep.delay != null ? Math.round(dep.delay / 60) : null };
+}
+
+function leavePill(e){
+  if (e.cancelled) return `<span class="pill">fällt aus</span>`;
+  if (e.missed) return `<span class="pill">verpasst</span>`;
+  if (e.leave <= 0) return `<span class="pill now">Jetzt los!</span>`;
+  if (e.leave <= 3) return `<span class="pill soon">Los in ${e.leave}′</span>`;
+  return `<span class="pill ok">Los in ${e.leave}′</span>`;
+}
+function minsLabel(e){
+  const m = Math.floor(e.mins);
+  return m <= 0 ? "jetzt" : `${m}′`;
+}
+function delayLabel(e){
+  if (e.delay == null) return `<span class="c">${hm(e.planned)}</span>`;
+  if (e.delay > 0) return `<span class="c">${hm(e.planned)} <span class="late">+${e.delay}</span></span>`;
+  if (e.delay < 0) return `<span class="c">${hm(e.planned)} <span class="late">${e.delay}</span></span>`;
+  return `<span class="c">${hm(e.planned)} <span class="ontime">pünktlich</span></span>`;
+}
+
+function render(){
+  const now = new Date();
+  const grid = document.getElementById("grid");
+  const all = [];
+
+  grid.innerHTML = STOPS.map(s => {
+    const d = data[s.id];
+    const walk = walkMin(s);
+    const dist = Math.round(distOf(s) * DETOUR);
+    const lineMap = new Map();
+    let rows = "";
+    if (!d){
+      rows = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    } else {
+      const items = d.deps.map(x => enrich(x, s, now)).filter(e => e.mins > -1).sort((a, b) => a.when - b.when);
+      items.forEach(e => { lineMap.set(e.dep.line?.name, e.dep.line); all.push(e); });
+      const shown = items.filter(e => !(hideMissed && e.missed)).slice(0, 9);
+      rows = shown.length ? `<table>${shown.map(e => `
+        <tr class="${e.missed ? "missed" : ""} ${e.cancelled ? "cancel" : ""}">
+          <td class="l">${badge(e.dep.line)}</td>
+          <td class="d"><div class="t">${esc(cleanDir(e.dep.direction))}</div>
+            <div class="s">${hm(e.when)}${e.dep.platform ? " · Steig " + esc(e.dep.platform) : ""}</div></td>
+          <td class="m"><b>${minsLabel(e)}</b>${delayLabel(e)}</td>
+          <td class="lv">${leavePill(e)}</td>
+        </tr>`).join("")}</table>`
+        : `<div class="empty">Keine Abfahrten in den nächsten ${DURATION} Minuten.</div>`;
+      if (d.error) rows += `<div class="err">⚠︎ Daten evtl. veraltet (${esc(d.error)})</div>`;
+    }
+    const lines = [...lineMap.values()].sort((a, b) => (a?.name || "").localeCompare(b?.name || "", "de", { numeric: true }));
+    return `<article class="card">
+      <div class="card-head">
+        <div><h3>${esc(s.name)}</h3><div class="lines">${lines.map(l => badge(l, true)).join("")}</div></div>
+        <div class="walk"><b>${walk}′</b><span>🚶 zu Fuß</span><small>~${dist} m</small></div>
+      </div>${rows}</article>`;
+  }).join("");
+
+  // Next catchable per line + direction (best stop)
+  const best = new Map();
+  all.filter(e => !e.missed && !e.cancelled).forEach(e => {
+    const k = (e.dep.line?.name || "") + "|" + cleanDir(e.dep.direction);
+    const cur = best.get(k);
+    if (!cur || e.leave < cur.leave) best.set(k, e);
+  });
+  const chips = [...best.values()].sort((a, b) => a.leave - b.leave).slice(0, 8);
+  document.getElementById("chips").innerHTML = chips.length ? chips.map(e => `
+    <div class="chip">${badge(e.dep.line)}
+      <div class="meta"><div class="dir">${esc(cleanDir(e.dep.direction))}</div>
+      <div class="from">ab ${esc(e.s.name)} · ${hm(e.when)}</div></div>
+      <div class="go"><b>${e.leave <= 0 ? "jetzt" : e.leave + "′"}</b><span>losgehen</span></div>
+    </div>`).join("")
+    : (Object.keys(data).length ? `<div class="empty">Gerade nichts erreichbar.</div>` : `<div class="skeleton" style="margin:0"></div>`);
+
+  if (lastUpdate){
+    const ago = Math.round((now - lastUpdate) / 1000);
+    statusEl.textContent = `Live · aktualisiert vor ${ago}s`;
+  }
+}
+
+function tick(){
+  const n = new Date();
+  const p = x => String(x).padStart(2, "0");
+  document.getElementById("clock").innerHTML = `${p(n.getHours())}:${p(n.getMinutes())}<small>:${p(n.getSeconds())}</small>`;
+}
+
+// controls
+document.querySelectorAll("#pace button").forEach(b => {
+  b.classList.toggle("on", +b.dataset.v === pace);
+  b.onclick = () => {
+    pace = +b.dataset.v;
+    document.querySelectorAll("#pace button").forEach(x => x.classList.toggle("on", x === b));
+    try { localStorage.setItem("pace", pace); } catch {}
+    render();
+  };
+});
+const hm_ = document.getElementById("hideMissed");
+hm_.checked = hideMissed;
+hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch {} render(); };
+document.getElementById("refresh").onclick = refresh;
+document.getElementById("theme").onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("theme", r.dataset.theme); } catch {}
+};
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+
+tick(); render(); refresh();
+setInterval(tick, 1000);
+setInterval(render, 5000);
+setInterval(refresh, REFRESH_MS);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+</script>
+</body>
+</html>
