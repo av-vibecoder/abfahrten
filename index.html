@@ -101,8 +101,8 @@ tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
 
 .pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted)}
 .pill.now{background:var(--bad);border-color:var(--bad);color:#fff;animation:blink 1s steps(2,start) infinite}
-.pill.soon{background:color-mix(in srgb,var(--warn) 18%,transparent);border-color:var(--warn);color:var(--warn)}
-.pill.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
+.pill.soon{background:rgba(201,106,0,.16);background:color-mix(in srgb,var(--warn) 18%,transparent);border-color:var(--warn);color:var(--warn)}
+.pill.ok{background:rgba(26,143,74,.14);border-color:rgba(26,143,74,.5);background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
 @keyframes blink{to{opacity:.55}}
 .empty,.err{padding:24px 16px;color:var(--muted);font-size:14px;text-align:center}
 .skeleton{height:46px;margin:8px 16px;border-radius:8px;background:linear-gradient(90deg,var(--panel-2),var(--line),var(--panel-2));background-size:200% 100%;animation:sh 1.2s infinite}
@@ -123,6 +123,15 @@ footer a{color:inherit}
   .lang{position:absolute;top:0;right:0;margin:0}
   .brand{padding-right:96px}
   .status{justify-content:flex-start}
+}
+@supports not (inset:0){
+  .brand>*+*{margin-left:14px}
+  .status>*+*{margin-left:6px}
+  .controls>*{margin:0 10px 10px 0}
+  .wx-main>*+*{margin-left:12px}
+  .card-head>*+*{margin-left:12px}
+  .lines>*{margin:0 4px 4px 0}
+  .lang button+button{margin-left:2px}
 }
 </style>
 </head>
@@ -224,7 +233,7 @@ const I18N = {
   },
 };
 let lang = "ru";
-try { const l = localStorage.getItem("lang"); if (I18N[l]) lang = l; } catch {}
+try { const l = localStorage.getItem("lang"); if (I18N[l]) lang = l; } catch (e) {}
 const T = () => I18N[lang];
 
 function applyLang(){
@@ -245,12 +254,12 @@ function applyLang(){
 const pace = 80;                     // m/min (normal walking pace)
 let hideMissed = false;
 const data = {};                     // stopId -> {deps, error}
-try { hideMissed = localStorage.getItem("hideMissed") === "1"; } catch {}
+try { hideMissed = localStorage.getItem("hideMissed") === "1"; } catch (e) {}
 
 function haversine(a, b){
   const R = 6371000, toR = x => x * Math.PI / 180;
   const dLat = toR(b.lat - a.lat), dLon = toR(b.lon - a.lon);
-  const h = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  const h = Math.pow(Math.sin(dLat/2), 2) + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.pow(Math.sin(dLon/2), 2);
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 function distOf(s){ return s.lat != null ? haversine(HOME, s) : s.dist; }
@@ -272,12 +281,12 @@ async function fetchJSON(path){
 async function loadStop(s){
   try{
     const j = await fetchJSON(`/stops/${s.id}/departures?duration=${DURATION}&results=${RESULTS}&remarks=false&language=de`);
-    const deps = (j.departures || j).filter(d => !(s.exclude || []).includes(d.line?.name));
-    const loc = deps[0]?.stop?.location;
+    const deps = (j.departures || j).filter(d => !(s.exclude || []).includes(d.line && d.line.name));
+    const loc = deps[0] && deps[0].stop && deps[0].stop.location;
     if (loc && s.lat == null){ s.lat = loc.latitude; s.lon = loc.longitude; }
     data[s.id] = { deps, error: null };
   }catch(e){
-    data[s.id] = { deps: data[s.id]?.deps || [], error: e.message || T().error };
+    data[s.id] = { deps: (data[s.id] && data[s.id].deps) || [], error: e.message || T().error };
   }
 }
 
@@ -287,7 +296,7 @@ async function refresh(){
   statusEl.textContent = T().updating;
   await Promise.all(STOPS.map(loadStop));
   lastUpdate = new Date();
-  const anyErr = STOPS.some(s => data[s.id]?.error);
+  const anyErr = STOPS.some(s => data[s.id] && data[s.id].error);
   dot.classList.toggle("err", anyErr);
   render();
 }
@@ -299,9 +308,9 @@ function productOf(line){
 }
 function badge(line, sm){
   const p = productOf(line);
-  return `<span class="badge ${p === "night" ? "bus night" : p}${sm ? " sm" : ""}">${esc(line?.name || "?")}</span>`;
+  return `<span class="badge ${p === "night" ? "bus night" : p}${sm ? " sm" : ""}">${esc((line && line.name) || "?")}</span>`;
 }
-function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function hm(d){ return d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }); }
 function cleanDir(d){ return (d || "").replace(/\s*\(Berlin\)\s*$/, "").replace(/^S\+U |^S |^U /, m => m); }
 
@@ -350,7 +359,7 @@ function render(){
       rows = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
     } else {
       const items = d.deps.map(x => enrich(x, s, now)).filter(e => e.mins > -1).sort((a, b) => a.when - b.when);
-      items.forEach(e => { lineMap.set(e.dep.line?.name, e.dep.line); all.push(e); });
+      items.forEach(e => { lineMap.set(e.dep.line && e.dep.line.name, e.dep.line); all.push(e); });
       const shown = items.filter(e => !(hideMissed && e.missed)).slice(0, 9);
       rows = shown.length ? `<table>${shown.map(e => `
         <tr class="${e.missed ? "missed" : ""} ${e.cancelled ? "cancel" : ""}">
@@ -363,7 +372,7 @@ function render(){
         : `<div class="empty">${T().empty(DURATION)}</div>`;
       if (d.error) rows += `<div class="err">${esc(T().stale(d.error))}</div>`;
     }
-    const lines = [...lineMap.values()].sort((a, b) => (a?.name || "").localeCompare(b?.name || "", "de", { numeric: true }));
+    const lines = [...lineMap.values()].sort((a, b) => ((a && a.name) || "").localeCompare((b && b.name) || "", "de", { numeric: true }));
     return `<article class="card">
       <div class="card-head">
         <div><h3>${esc(s.name)} ${s.icon || ""}</h3><div class="lines">${lines.map(l => badge(l, true)).join("")}</div></div>
@@ -386,20 +395,20 @@ function tick(){
 // controls
 const hm_ = document.getElementById("hideMissed");
 hm_.checked = hideMissed;
-hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch {} render(); };
+hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch (e) {} render(); };
 document.getElementById("refresh").onclick = refresh;
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
   lang = b.dataset.lang;
-  try { localStorage.setItem("lang", lang); } catch {}
+  try { localStorage.setItem("lang", lang); } catch (e) {}
   applyLang();
 });
 document.getElementById("theme").onclick = () => {
   const r = document.documentElement;
   const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
   r.dataset.theme = dark ? "light" : "dark";
-  try { localStorage.setItem("theme", r.dataset.theme); } catch {}
+  try { localStorage.setItem("theme", r.dataset.theme); } catch (e) {}
 };
-try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
 
 // ---- Weather (Open-Meteo, no key needed) ----
 const WX_ICON = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",56:"🌧️",57:"🌧️",
