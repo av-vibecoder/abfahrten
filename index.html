@@ -34,6 +34,8 @@ h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02e
 .sub{color:var(--muted);font-size:14px;margin-top:3px}
 .clock{font-family:"JetBrains Mono",monospace;font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1}
 .clock small{font-size:18px;color:var(--muted)}
+.date{font-size:14px;font-weight:600;margin-top:4px}
+.date .hol{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700}
 .right{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
 header{position:relative}
 .lang{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px;margin-bottom:8px}
@@ -56,7 +58,7 @@ header{position:relative}
 .wx{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:10px;margin-bottom:18px}
 .wx-tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
 .wx-tile b{font-family:"JetBrains Mono",monospace;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.wx-tile span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-tile span{font-size:12px;line-height:1.3;color:var(--muted)}
 .wx-tile .wx-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 .wx-main{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px}
 .wx-main > div{display:flex;flex-direction:column;min-width:0}
@@ -104,6 +106,9 @@ tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
 .pill.soon{background:rgba(201,106,0,.16);background:color-mix(in srgb,var(--warn) 18%,transparent);border-color:var(--warn);color:var(--warn)}
 .pill.ok{background:rgba(26,143,74,.14);border-color:rgba(26,143,74,.5);background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
 @keyframes blink{to{opacity:.55}}
+.more{display:block;width:100%;border:0;border-top:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:600 13px Inter,sans-serif;padding:11px 16px;cursor:pointer;text-align:center}
+.more:hover{background:var(--line)}
+.more:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .empty,.err{padding:24px 16px;color:var(--muted);font-size:14px;text-align:center}
 .skeleton{height:46px;margin:8px 16px;border-radius:8px;background:linear-gradient(90deg,var(--panel-2),var(--line),var(--panel-2));background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
@@ -117,6 +122,7 @@ footer a{color:inherit}
   td{padding:9px 12px;font-size:14px}
   td.m b{font-size:17px}
   td.m .pt, td.m .ontime{display:none}
+  td.d .t{white-space:normal;overflow:visible;line-height:1.25}
   td.l{width:50px}
   .badge{min-width:38px}
   .right{text-align:left;align-items:flex-start}
@@ -142,7 +148,6 @@ footer a{color:inherit}
       <div class="logo">🚋</div>
       <div>
         <h1 data-i18n="title">Отправления 🏠</h1>
-        <div class="sub" data-i18n="sub"></div>
       </div>
     </div>
     <div class="right">
@@ -150,15 +155,10 @@ footer a{color:inherit}
         <button id="langRU" data-lang="ru" lang="ru">RU</button><button id="langDE" data-lang="de" lang="de">DE</button>
       </div>
       <div class="clock" id="clock">--:--<small>:--</small></div>
+      <div class="date" id="date"></div>
       <div class="status"><span class="dot" id="dot"></span><span id="status"></span></div>
     </div>
   </header>
-
-  <div class="controls">
-    <label class="toggle"><input type="checkbox" id="hideMissed"> <span data-i18n="hideMissed"></span></label>
-    <button class="icon-btn" id="refresh" data-i18n="refresh" data-i18n-title="refreshTitle"></button>
-    <button class="icon-btn" id="theme" data-i18n-title="themeTitle">◐</button>
-  </div>
 
   <section class="wx" id="wx">
     <div class="wx-tile wx-main"><span class="wx-ico" id="wxIco">·</span>
@@ -167,6 +167,13 @@ footer a{color:inherit}
     <div class="wx-tile"><span class="wx-k" data-i18n="wxToday"></span><b id="wxMinMax">–</b><span id="wxFeels">&nbsp;</span></div>
     <div class="wx-tile"><span class="wx-k" data-i18n="wxSun"></span><b id="wxSun">–</b><span id="wxSunSub">&nbsp;</span></div>
   </section>
+
+  <div class="controls">
+    <label class="toggle"><input type="checkbox" id="hideMissed"> <span data-i18n="hideMissed"></span></label>
+    <button class="icon-btn" id="refresh" data-i18n="refresh" data-i18n-title="refreshTitle"></button>
+    <button class="icon-btn" id="theme" data-i18n-title="themeTitle">◐</button>
+  </div>
+
 
   <div class="grid" id="grid"></div>
 
@@ -198,6 +205,7 @@ const I18N = {
     feels: (t, mm) => `ощущается ${t}° · ${mm} мм`,
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
+    more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
     now: "сейчас", onTime: "вовремя", platform: "платф.", walk: "🚶 пешком",
     empty: n => `Нет отправлений в ближайшие ${n} минут.`, stale: e => `⚠︎ Данные могут быть устаревшими (${e})`, error: "Ошибка",
     footer: `Время пешком оценено по прямой × 1,35 (поправка на маршрут) при обычном темпе. «Выход: N′» — через сколько минут нужно выйти из дома, чтобы успеть.
@@ -220,6 +228,7 @@ const I18N = {
     feels: (t, mm) => `gefühlt ${t}° · ${mm} mm heute`,
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
+    more: n => `▾ ${n} weitere`, less: "▴ Weniger",
     now: "jetzt", onTime: "pünktlich", platform: "Steig", walk: "🚶 zu Fuß",
     empty: n => `Keine Abfahrten in den nächsten ${n} Minuten.`, stale: e => `⚠︎ Daten evtl. veraltet (${e})`, error: "Fehler",
     footer: `Fußwege geschätzt aus Luftlinie × 1,35 (Umwegfaktor) bei normalem Gehtempo. „Los in“ = Minuten bis du losgehen musst, um die Abfahrt zu erreichen.
@@ -248,12 +257,14 @@ function applyLang(){
     b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
   });
   if (!lastUpdate) statusEl.textContent = t.loading;
-  renderWeather(); render();
+  renderWeather(); render(); renderDate(new Date());
 }
 
 const pace = 80;                     // m/min (normal walking pace)
 let hideMissed = false;
-const data = {};                     // stopId -> {deps, error}
+const data = {};
+const expanded = {};                 // stopId -> true when the list is expanded
+const LIMIT = 5;                     // stopId -> {deps, error}
 try { hideMissed = localStorage.getItem("hideMissed") === "1"; } catch (e) {}
 
 function haversine(a, b){
@@ -358,9 +369,13 @@ function render(){
     if (!d){
       rows = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
     } else {
-      const items = d.deps.map(x => enrich(x, s, now)).filter(e => e.mins > -1).sort((a, b) => a.when - b.when);
+      const items0 = d.deps.map(x => enrich(x, s, now)).filter(e => e.mins > -1).sort((a, b) => a.when - b.when);
+      const items = items0;
       items.forEach(e => { lineMap.set(e.dep.line && e.dep.line.name, e.dep.line); all.push(e); });
-      const shown = items.filter(e => !(hideMissed && e.missed)).slice(0, 9);
+      const all12 = items.filter(e => !(hideMissed && e.missed)).slice(0, 12);
+      const open = expanded[s.id];
+      const shown = open ? all12 : all12.slice(0, LIMIT);
+      const more = all12.length - LIMIT;
       rows = shown.length ? `<table>${shown.map(e => `
         <tr class="${e.missed ? "missed" : ""} ${e.cancelled ? "cancel" : ""}">
           <td class="l">${badge(e.dep.line)}</td>
@@ -368,7 +383,7 @@ function render(){
             <div class="s">${hm(e.when)}${e.dep.platform ? " · " + T().platform + " " + esc(e.dep.platform) : ""}</div></td>
           <td class="m"><b>${minsLabel(e)}</b>${delayLabel(e)}</td>
           <td class="lv">${leavePill(e)}</td>
-        </tr>`).join("")}</table>`
+        </tr>`).join("")}</table>${more > 0 ? `<button class="more" data-stop="${s.id}" aria-expanded="${open ? "true" : "false"}">${open ? T().less : T().more(more)}</button>` : ""}`
         : `<div class="empty">${T().empty(DURATION)}</div>`;
       if (d.error) rows += `<div class="err">${esc(T().stale(d.error))}</div>`;
     }
@@ -386,10 +401,53 @@ function render(){
   }
 }
 
+// Berlin public holidays (fixed dates + Easter-based)
+function easter(y){ // Anonymous Gregorian algorithm
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
+        f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+        i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+        mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, mo - 1, da);
+}
+const HOLIDAYS = {
+  newyear:   { ru: "Новый год",                 de: "Neujahr" },
+  women:     { ru: "Международный женский день", de: "Frauentag" },
+  goodfri:   { ru: "Страстная пятница",          de: "Karfreitag" },
+  eastermon: { ru: "Пасхальный понедельник",     de: "Ostermontag" },
+  may1:      { ru: "День труда",                 de: "Tag der Arbeit" },
+  ascension: { ru: "Вознесение",                 de: "Christi Himmelfahrt" },
+  whitmon:   { ru: "Духов день",                 de: "Pfingstmontag" },
+  unity:     { ru: "День германского единства",  de: "Tag der Deutschen Einheit" },
+  xmas1:     { ru: "Рождество",                  de: "1. Weihnachtstag" },
+  xmas2:     { ru: "Второй день Рождества",      de: "2. Weihnachtstag" },
+};
+const holCache = {};
+function holidayKey(dt){
+  const y = dt.getFullYear();
+  if (!holCache[y]){
+    const e = easter(y), off = n => { const x = new Date(e); x.setDate(x.getDate() + n); return x; };
+    const k = x => (x.getMonth() + 1) + "-" + x.getDate();
+    const m = {};
+    m["1-1"] = "newyear"; m["3-8"] = "women"; m["5-1"] = "may1"; m["10-3"] = "unity"; m["12-25"] = "xmas1"; m["12-26"] = "xmas2";
+    m[k(off(-2))] = "goodfri"; m[k(off(1))] = "eastermon"; m[k(off(39))] = "ascension"; m[k(off(50))] = "whitmon";
+    holCache[y] = m;
+  }
+  return holCache[y][(dt.getMonth() + 1) + "-" + dt.getDate()] || null;
+}
+let lastDateHtml = "";
+function renderDate(n){
+  let txt = n.toLocaleDateString(lang === "ru" ? "ru-RU" : "de-DE", { weekday: "short", day: "numeric", month: "long" });
+  txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+  const hk = holidayKey(n);
+  const html = esc(txt) + (hk ? `<span class="hol">🎉 ${esc(HOLIDAYS[hk][lang])}</span>` : "");
+  if (html !== lastDateHtml){ document.getElementById("date").innerHTML = html; lastDateHtml = html; }
+}
+
 function tick(){
   const n = new Date();
   const p = x => String(x).padStart(2, "0");
   document.getElementById("clock").innerHTML = `${p(n.getHours())}:${p(n.getMinutes())}<small>:${p(n.getSeconds())}</small>`;
+  renderDate(n);
 }
 
 // controls
@@ -397,6 +455,13 @@ const hm_ = document.getElementById("hideMissed");
 hm_.checked = hideMissed;
 hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch (e) {} render(); };
 document.getElementById("refresh").onclick = refresh;
+document.getElementById("grid").addEventListener("click", ev => {
+  const b = ev.target.closest ? ev.target.closest(".more") : null;
+  if (!b) return;
+  const id = b.getAttribute("data-stop");
+  expanded[id] = !expanded[id];
+  render();
+});
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
   lang = b.dataset.lang;
   try { localStorage.setItem("lang", lang); } catch (e) {}
