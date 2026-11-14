@@ -109,6 +109,22 @@ tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
 .more{display:block;width:100%;border:0;border-top:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:600 13px Inter,sans-serif;padding:11px 16px;cursor:pointer;text-align:center}
 .more:hover{background:var(--line)}
 .more:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.has-warn{position:relative;display:inline-block}
+.has-warn::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--panel)}
+.alert-bar{display:flex;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:rgba(201,106,0,.12);color:var(--ink);font:600 13px Inter,sans-serif;padding:9px 16px;cursor:pointer;text-align:left}
+.alert-bar .ai{color:var(--warn);margin-right:8px;flex:none}
+.alert-bar .at{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-bar .ac{flex:none;margin-left:8px;color:var(--muted)}
+.alert-bar:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.alert-list{padding:4px 16px 10px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.alert-item{padding:8px 0;border-bottom:1px dashed var(--line)}
+.alert-item:last-of-type{border-bottom:0}
+.alert-top{display:flex;flex-wrap:wrap;align-items:center}
+.alert-top>*{margin-right:6px}
+.alert-top b{font-size:13px}
+.alert-top .until{font-size:12px;color:var(--muted)}
+.alert-item p{margin:5px 0 0;font-size:13px;line-height:1.45;color:var(--muted)}
+.alert-note{font-size:11px;color:var(--muted);padding-top:6px}
 .empty,.err{padding:24px 16px;color:var(--muted);font-size:14px;text-align:center}
 .skeleton{height:46px;margin:8px 16px;border-radius:8px;background:linear-gradient(90deg,var(--panel-2),var(--line),var(--panel-2));background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
@@ -206,6 +222,9 @@ const I18N = {
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
+    disruption: "Изменения в движении", disruptions: (n, l) => `Изменения в движении (${n}): ${l}`,
+    until: d => `до ${d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}`,
+    germanOnly: "BVG публикует эти сообщения только на немецком.",
     now: "сейчас", onTime: "вовремя", platform: "платф.", walk: "🚶 пешком",
     empty: n => `Нет отправлений в ближайшие ${n} минут.`, stale: e => `⚠︎ Данные могут быть устаревшими (${e})`, error: "Ошибка",
     footer: `Время пешком оценено по прямой × 1,35 (поправка на маршрут) при обычном темпе. «Выход: N′» — через сколько минут нужно выйти из дома, чтобы успеть.
@@ -229,6 +248,9 @@ const I18N = {
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
+    disruption: "Störung", disruptions: (n, l) => `${n} Störungen: ${l}`,
+    until: d => `bis ${d.toLocaleDateString("de-DE", { day: "numeric", month: "short" })}`,
+    germanOnly: "",
     now: "jetzt", onTime: "pünktlich", platform: "Steig", walk: "🚶 zu Fuß",
     empty: n => `Keine Abfahrten in den nächsten ${n} Minuten.`, stale: e => `⚠︎ Daten evtl. veraltet (${e})`, error: "Fehler",
     footer: `Fußwege geschätzt aus Luftlinie × 1,35 (Umwegfaktor) bei normalem Gehtempo. „Los in“ = Minuten bis du losgehen musst, um die Abfahrt zu erreichen.
@@ -264,7 +286,63 @@ const pace = 80;                     // m/min (normal walking pace)
 let hideMissed = false;
 const data = {};
 const expanded = {};                 // stopId -> true when the list is expanded
-const LIMIT = 5;                     // stopId -> {deps, error}
+const LIMIT = 5;
+const warnings = {};                 // remark id -> {id, summary, text, from, until, lines:Set}
+const alertsOpen = {};               // stopId -> true when the disruption panel is open
+function plain(html){
+  const t = document.createElement("textarea");
+  t.innerHTML = String(html || "").replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, " ");
+  return t.value.replace(/\[MEHR\/MORE\]/gi, " ").replace(/\s+/g, " ").trim();
+}
+function addWarnings(lineName, remarks){
+  if (!lineName || !remarks) return;
+  remarks.forEach(r => {
+    if (!r || r.type !== "warning") return;
+    const id = r.id || (r.summary + "|" + r.text);
+    let w = warnings[id];
+    if (!w){
+      const txt = plain(r.text), sum = plain(r.summary);
+      w = warnings[id] = { id, summary: sum || (txt.length > 60 ? txt.slice(0, 57) + "…" : txt), text: txt,
+        from: r.validFrom ? new Date(r.validFrom) : null, until: r.validUntil ? new Date(r.validUntil) : null, lines: {} };
+    }
+    w.lines[lineName] = true;
+  });
+}
+// Line-wide disruptions (detours, interruptions) are attached to trips, not departures:
+// fetch one trip per line and direction every 10 minutes.
+let warnBusy = false, warnStarted = false;
+async function loadTripWarnings(){
+  if (warnBusy) return; warnBusy = true;
+  const seen = {}, jobs = [];
+  STOPS.forEach(s => {
+    const d = data[s.id]; if (!d) return;
+    d.deps.forEach(x => {
+      const k = (x.line && x.line.name) + "|" + x.direction;
+      if (seen[k] || !x.tripId) return;
+      seen[k] = true; jobs.push(x);
+    });
+  });
+  for (const x of jobs){
+    try{
+      const j = await fetchJSON(`/trips/${encodeURIComponent(x.tripId)}?remarks=true&stopovers=false&polyline=false&language=de`);
+      const t = j.trip || j;
+      addWarnings(x.line && x.line.name, t.remarks);
+    }catch(e){ /* keep what we have */ }
+  }
+  warnBusy = false;
+  render();
+}
+function activeWarningsFor(lineNames, now){
+  const out = [];
+  Object.keys(warnings).forEach(id => {
+    const w = warnings[id];
+    if (w.from && w.from > now) return;
+    if (w.until && w.until < now) return;
+    const ls = lineNames.filter(n => w.lines[n]);
+    if (ls.length) out.push({ w, ls });
+  });
+  return out;
+}                     // stopId -> {deps, error}
 try { hideMissed = localStorage.getItem("hideMissed") === "1"; } catch (e) {}
 
 function haversine(a, b){
@@ -276,14 +354,18 @@ function haversine(a, b){
 function distOf(s){ return s.lat != null ? haversine(HOME, s) : s.dist; }
 function walkMin(s){ return Math.max(1, Math.ceil(distOf(s) * DETOUR / pace)); }
 
+let apiFirst = 0;
 async function fetchJSON(path){
   let lastErr;
-  for (const base of APIS){
+  const order = apiFirst ? [APIS[1], APIS[0]] : APIS;
+  for (const base of order){
     try{
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 12000);
       const r = await fetch(base + path, { signal: ctl.signal }); clearTimeout(t);
       if (!r.ok) throw new Error("HTTP " + r.status);
-      return await r.json();
+      const json = await r.json();
+      apiFirst = APIS.indexOf(base);
+      return json;
     }catch(e){ lastErr = e; }
   }
   throw lastErr;
@@ -291,11 +373,12 @@ async function fetchJSON(path){
 
 async function loadStop(s){
   try{
-    const j = await fetchJSON(`/stops/${s.id}/departures?duration=${DURATION}&results=${RESULTS}&remarks=false&language=de`);
+    const j = await fetchJSON(`/stops/${s.id}/departures?duration=${DURATION}&results=${RESULTS}&remarks=true&language=de`);
     const deps = (j.departures || j).filter(d => !(s.exclude || []).includes(d.line && d.line.name));
     const loc = deps[0] && deps[0].stop && deps[0].stop.location;
     if (loc && s.lat == null){ s.lat = loc.latitude; s.lon = loc.longitude; }
     data[s.id] = { deps, error: null };
+    deps.forEach(d => addWarnings(d.line && d.line.name, d.remarks));
   }catch(e){
     data[s.id] = { deps: (data[s.id] && data[s.id].deps) || [], error: e.message || T().error };
   }
@@ -307,6 +390,7 @@ async function refresh(){
   statusEl.textContent = T().updating;
   await Promise.all(STOPS.map(loadStop));
   lastUpdate = new Date();
+  if (!warnStarted && STOPS.some(s => data[s.id] && data[s.id].deps.length)){ warnStarted = true; loadTripWarnings(); }
   const anyErr = STOPS.some(s => data[s.id] && data[s.id].error);
   dot.classList.toggle("err", anyErr);
   render();
@@ -388,11 +472,36 @@ function render(){
       if (d.error) rows += `<div class="err">${esc(T().stale(d.error))}</div>`;
     }
     const lines = [...lineMap.values()].sort((a, b) => ((a && a.name) || "").localeCompare((b && b.name) || "", "de", { numeric: true }));
+    const names = lines.map(l => l && l.name);
+    const alerts = activeWarningsFor(names, now);
+    const warnLines = {};
+    alerts.forEach(a => a.ls.forEach(n => { warnLines[n] = true; }));
+    const lineHtml = lines.map(l => {
+      const b = badge(l, true);
+      return warnLines[l && l.name] ? `<span class="has-warn" title="${esc(T().disruption)}">${b}</span>` : b;
+    }).join("");
+    let alertHtml = "";
+    if (alerts.length){
+      const isOpen = !!alertsOpen[s.id];
+      const lineList = Object.keys(warnLines).sort((a, b) => a.localeCompare(b, "de", { numeric: true }));
+      const head = alerts.length === 1
+        ? `${esc(lineList.join(", "))} · ${esc(alerts[0].w.summary || T().disruption)}`
+        : T().disruptions(alerts.length, esc(lineList.join(", ")));
+      alertHtml = `<button class="alert-bar" data-alerts="${s.id}" aria-expanded="${isOpen}">
+          <span class="ai">⚠</span><span class="at">${head}</span><span class="ac">${isOpen ? "▴" : "▾"}</span></button>`;
+      if (isOpen){
+        alertHtml += `<div class="alert-list">${alerts.map(a => `
+          <div class="alert-item"><div class="alert-top">${a.ls.map(n => badge(lineMap.get(n), true)).join("")}
+            <b>${esc(a.w.summary)}</b>${a.w.until ? `<span class="until">${T().until(a.w.until)}</span>` : ""}</div>
+            <p>${esc(a.w.text)}</p></div>`).join("")}
+          ${lang === "ru" ? `<div class="alert-note">${T().germanOnly}</div>` : ""}</div>`;
+      }
+    }
     return `<article class="card">
       <div class="card-head">
-        <div><h3>${esc(s.name)} ${s.icon || ""}</h3><div class="lines">${lines.map(l => badge(l, true)).join("")}</div></div>
+        <div><h3>${esc(s.name)} ${s.icon || ""}</h3><div class="lines">${lineHtml}</div></div>
         <div class="walk"><b>${walk}′</b><span>${T().walk}</span><small>~${dist} m</small></div>
-      </div>${rows}</article>`;
+      </div>${alertHtml}${rows}</article>`;
   }).join("");
 
   if (lastUpdate){
@@ -456,7 +565,10 @@ hm_.checked = hideMissed;
 hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch (e) {} render(); };
 document.getElementById("refresh").onclick = refresh;
 document.getElementById("grid").addEventListener("click", ev => {
-  const b = ev.target.closest ? ev.target.closest(".more") : null;
+  if (!ev.target.closest) return;
+  const a = ev.target.closest(".alert-bar");
+  if (a){ const id = a.getAttribute("data-alerts"); alertsOpen[id] = !alertsOpen[id]; render(); return; }
+  const b = ev.target.closest(".more");
   if (!b) return;
   const id = b.getAttribute("data-stop");
   expanded[id] = !expanded[id];
@@ -521,6 +633,7 @@ function renderWeather(){
 }
 
 loadWeather(); setInterval(loadWeather, 15 * 60000);
+setInterval(loadTripWarnings, 10 * 60000);
 tick(); applyLang(); refresh();
 setInterval(tick, 1000);
 setInterval(render, 5000);
