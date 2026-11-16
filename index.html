@@ -65,6 +65,30 @@ header{position:relative}
 .wx-main b{font-size:28px;line-height:1.05}
 .wx-tile .wx-ico{font-size:34px;line-height:1;overflow:visible;color:inherit;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 @media (max-width:700px){.wx{grid-template-columns:1fr 1fr}}
+.trip{margin-bottom:18px}
+.trip-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 2px 8px}
+.trip-row{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.trip-tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;text-align:left;color:var(--ink);font:inherit}
+.trip-btn{cursor:pointer;display:block;width:100%}
+.trip-btn:focus-visible,.maps-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.trip-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;justify-content:space-between}
+.trip-big{font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.trip-big small{font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:var(--muted);margin-left:6px}
+.trip-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
+.trip-chain{display:flex;flex-wrap:wrap;align-items:center;margin-top:6px}
+.trip-chain>*{margin-right:4px}
+.trip-chain .sep{color:var(--muted);font-size:12px}
+.trip-alt{margin-top:7px;font-size:12px;color:var(--warn);font-weight:600}
+.maps-btn{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel-2)}
+.trip-panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.trip-panel h4{margin:0;padding:10px 14px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.jrow{display:flex;align-items:center;padding:8px 14px;border-top:1px solid var(--line)}
+.jrow .jt{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:700;white-space:nowrap;min-width:0}
+.jrow .jt small{display:block;font-family:Inter,sans-serif;font-size:11px;font-weight:500;color:var(--muted)}
+.jrow .trip-chain{flex:1;margin:0 10px;min-width:0}
+.jrow.missed{opacity:.4}
+.jrow .cx{color:var(--bad);font-size:11px;font-weight:700}
+@media (max-width:560px){.trip-row{grid-template-columns:1fr}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:18px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 .card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
@@ -147,6 +171,7 @@ footer a{color:inherit}
   .status{justify-content:flex-start}
 }
 @supports not (inset:0){
+  .trip-row>*+*{margin-top:10px}
   .brand>*+*{margin-left:14px}
   .status>*+*{margin-left:6px}
   .controls>*{margin:0 10px 10px 0}
@@ -182,6 +207,15 @@ footer a{color:inherit}
     <div class="wx-tile"><span class="wx-k" data-i18n="wxRain"></span><b id="wxRain">–</b><span id="wxRainSub">&nbsp;</span></div>
     <div class="wx-tile"><span class="wx-k" data-i18n="wxToday"></span><b id="wxMinMax">–</b><span id="wxFeels">&nbsp;</span></div>
     <div class="wx-tile"><span class="wx-k" data-i18n="wxSun"></span><b id="wxSun">–</b><span id="wxSunSub">&nbsp;</span></div>
+  </section>
+
+  <section class="trip" id="trip">
+    <div class="trip-h" data-i18n="tripTitle"></div>
+    <div class="trip-row">
+      <div class="trip-tile" id="carTile"></div>
+      <button class="trip-tile trip-btn" id="ptTile" aria-expanded="false"></button>
+    </div>
+    <div class="trip-panel" id="ptPanel" hidden></div>
   </section>
 
   <div class="controls">
@@ -222,6 +256,11 @@ const I18N = {
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
+    tripTitle: "Дорога к Barfer's", car: "🚗 На машине", pt: "🚆 На транспорте",
+    arrive: t => `прибытие ${t}`, km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", openMaps: "Открыть в Картах ↗",
+    leaveIn: n => n <= 0 ? "выходи сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
+    faster: (c, t) => `⚡ быстрее: ${c} · прибытие ${t}`, myDisrupted: "⚠ на вашем маршруте сбой — см. варианты", noConn: "Нет данных о маршруте",
+    inclWalk: "включая ~10′ пешком от S Marienfelde", cancelledShort: "отменён", loadingShort: "Загрузка…",
     disruption: "Изменения в движении", disruptions: (n, l) => `Изменения в движении (${n}): ${l}`,
     until: d => `до ${d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}`,
     germanOnly: "BVG публикует эти сообщения только на немецком.",
@@ -248,6 +287,11 @@ const I18N = {
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
+    tripTitle: "Weg zu Barfer's", car: "🚗 Auto", pt: "🚆 Öffis",
+    arrive: t => `Ankunft ${t}`, km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", openMaps: "In Karten öffnen ↗",
+    leaveIn: n => n <= 0 ? "jetzt los" : `los in ${n}′`, myRoute: "Meine Route (255 › S2)", others: "Alternativen",
+    faster: (c, t) => `⚡ schneller: ${c} · Ankunft ${t}`, myDisrupted: "⚠ Störung auf deiner Route — siehe Alternativen", noConn: "Keine Verbindungsdaten",
+    inclWalk: "inkl. ~10′ Fußweg ab S Marienfelde", cancelledShort: "fällt aus", loadingShort: "Lade…",
     disruption: "Störung", disruptions: (n, l) => `${n} Störungen: ${l}`,
     until: d => `bis ${d.toLocaleDateString("de-DE", { day: "numeric", month: "short" })}`,
     germanOnly: "",
@@ -279,7 +323,7 @@ function applyLang(){
     b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
   });
   if (!lastUpdate) statusEl.textContent = t.loading;
-  renderWeather(); render(); renderDate(new Date());
+  renderWeather(); render(); renderDate(new Date()); if (typeof renderTrip === "function" && $("carTile")) renderTrip();
 }
 
 const pace = 80;                     // m/min (normal walking pace)
@@ -631,6 +675,111 @@ function renderWeather(){
   $("wxSun").textContent = main;
   $("wxSunSub").textContent = sub;
 }
+
+// ---- Trip to Barfer's ----
+const DEST = { lat: 52.429324, lon: 13.375203, label: "Großbeerenstraße 164, 12277 Berlin" };
+const CAR_FROM = { lat: 52.5551, lon: 13.4376, label: "Hamburger Platz, 13086 Berlin" };
+const MARIENFELDE = "900073101", PANKOW = "900130002", FINAL_WALK = 10; // minutes
+const MAPS_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=" + encodeURIComponent(CAR_FROM.label) + "&destination=" + encodeURIComponent(DEST.label);
+let car = null, pt = { mine: [], alts: [], loaded: false, failed: false }, ptOpen = false;
+
+async function loadCar(){
+  try{
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${CAR_FROM.lon},${CAR_FROM.lat};${DEST.lon},${DEST.lat}?overview=false`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json(); const rt = j.routes && j.routes[0];
+    if (rt) car = { min: Math.round(rt.duration / 60), km: Math.round(rt.distance / 100) / 10 };
+  }catch(e){ /* keep last value */ }
+  renderTrip();
+}
+
+function transitLegs(j){ return j.legs.filter(l => l.line && !l.walking); }
+function chainKey(j){ return transitLegs(j).map(l => l.line.name).join(">"); }
+function jInfo(j){
+  const legs = j.legs, first = legs[0], last = legs[legs.length - 1];
+  const leaveAt = new Date(first.departure || first.plannedDeparture);
+  const arrStation = new Date(last.arrival || last.plannedArrival);
+  const arrive = new Date(arrStation.getTime() + FINAL_WALK * 60000);
+  const cancelled = legs.some(l => l.cancelled);
+  const lines = transitLegs(j).map(l => l.line);
+  const t = transitLegs(j);
+  const delay = t.length && t[0].departureDelay ? Math.round(t[0].departureDelay / 60) : 0;
+  return { j, leaveAt, arrive, cancelled, lines, key: chainKey(j), delay,
+           dur: Math.round((arrive - leaveAt) / 60000) };
+}
+async function loadPT(){
+  const from = `from.address=${encodeURIComponent("Pistoriusstraße")}&from.latitude=${HOME.lat}&from.longitude=${HOME.lon}`;
+  const common = `&to=${MARIENFELDE}&stopovers=false&remarks=true&language=de`;
+  try{
+    const [a, b] = await Promise.all([
+      fetchJSON(`/journeys?${from}${common}&via=${PANKOW}&results=4`),
+      fetchJSON(`/journeys?${from}${common}&results=5`),
+    ]);
+    const mineAll = (a.journeys || []).map(jInfo);
+    let mine = mineAll.filter(x => x.key === "255>S2");
+    if (!mine.length) mine = mineAll;
+    const mineKeys = {}; mine.forEach(x => { mineKeys[x.key] = true; });
+    const alts = (b.journeys || []).map(jInfo).filter(x => !mineKeys[x.key]);
+    // collect disruption notices for lines on these journeys
+    (a.journeys || []).concat(b.journeys || []).forEach(j => j.legs.forEach(l => { if (l.line) addWarnings(l.line.name, l.remarks); }));
+    pt = { mine, alts, loaded: true, failed: false };
+  }catch(e){
+    pt.failed = !pt.loaded;
+  }
+  renderTrip();
+}
+
+function chainHtml(lines){
+  return `<div class="trip-chain">${lines.map((l, i) => (i ? `<span class="sep">›</span>` : "") + badge(l, true)).join("")}</div>`;
+}
+function routeDisrupted(x, now){
+  if (x.cancelled) return true;
+  return activeWarningsFor(x.lines.map(l => l.name), now).some(a => /unterbrech|ausfall|ersatzverkehr|fällt aus/i.test(a.w.summary + " " + a.w.text));
+}
+function renderTrip(){
+  const t = T(), now = new Date();
+  // car
+  $("carTile").innerHTML = `<div class="trip-k"><span>${t.car}</span></div>` + (car
+    ? `<div class="trip-big">${car.min}′<small>${t.arrive(hm(new Date(now.getTime() + car.min * 60000)))}</small></div>
+       <div class="trip-sub">${t.km(car.km.toLocaleString(lang === "ru" ? "ru-RU" : "de-DE"))} · ${t.noTraffic}</div>`
+    : `<div class="trip-sub">${t.loadingShort}</div>`)
+    + `<a class="maps-btn" href="${MAPS_URL}" target="_blank" rel="noopener">${t.openMaps}</a>`;
+  // public transport
+  const tile = $("ptTile"), panel = $("ptPanel");
+  tile.setAttribute("aria-expanded", ptOpen ? "true" : "false");
+  const upcoming = arr => arr.filter(x => (x.leaveAt - now) / 60000 > -1);
+  const mine = upcoming(pt.mine), alts = upcoming(pt.alts).sort((a, b) => a.arrive - b.arrive);
+  const head = `<div class="trip-k"><span>${t.pt}</span><span>${ptOpen ? "▴" : "▾"}</span></div>`;
+  if (!pt.loaded){ tile.innerHTML = head + `<div class="trip-sub">${pt.failed ? t.noConn : t.loadingShort}</div>`; panel.hidden = true; return; }
+  const next = mine.filter(x => !x.cancelled)[0] || mine[0];
+  let body = "";
+  if (next){
+    const leave = Math.floor((next.leaveAt - now) / 60000);
+    body = `<div class="trip-big">${esc(t.leaveIn(leave))}</div>
+      ${chainHtml(next.lines)}
+      <div class="trip-sub">${t.arrive(hm(next.arrive))} · ${next.dur}′ · ${t.inclWalk}</div>`;
+    const bestAlt = alts.filter(x => !x.cancelled)[0];
+    if (routeDisrupted(next, now)) body += `<div class="trip-alt">${t.myDisrupted}</div>`;
+    else if (bestAlt && bestAlt.arrive <= next.arrive - 5 * 60000)
+      body += `<div class="trip-alt">${esc(t.faster(bestAlt.lines.map(l => l.name).join(" › "), hm(bestAlt.arrive)))}</div>`;
+  } else body = `<div class="trip-sub">${t.noConn}</div>`;
+  tile.innerHTML = head + body;
+  // expanded panel
+  panel.hidden = !ptOpen;
+  if (ptOpen){
+    const row = x => {
+      const leave = Math.floor((x.leaveAt - now) / 60000);
+      return `<div class="jrow ${leave < 0 ? "missed" : ""}"><div class="jt">${hm(x.leaveAt)} → ${hm(x.arrive)}<small>${x.dur}′${x.delay > 0 ? ` · <span class="late">+${x.delay}</span>` : ""}</small></div>
+        ${chainHtml(x.lines)}${x.cancelled ? `<span class="cx">${t.cancelledShort}</span>` : leavePill({ cancelled: false, missed: leave < 0, leave })}</div>`;
+    };
+    panel.innerHTML = `<h4>${t.myRoute}</h4>${mine.slice(0, 3).map(row).join("") || `<div class="jrow">${t.noConn}</div>`}
+      ${alts.length ? `<h4>${t.others}</h4>${alts.slice(0, 3).map(row).join("")}` : ""}`;
+  }
+}
+$("ptTile").onclick = () => { ptOpen = !ptOpen; renderTrip(); };
+loadCar(); setInterval(loadCar, 60 * 60000);
+loadPT(); setInterval(loadPT, 2 * 60000);
+setInterval(renderTrip, 15000);
 
 loadWeather(); setInterval(loadWeather, 15 * 60000);
 setInterval(loadTripWarnings, 10 * 60000);
