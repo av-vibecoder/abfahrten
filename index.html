@@ -260,7 +260,7 @@ const I18N = {
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
-    tripTitle: "Дорога к Barfer's", car: "🚗 На машине", pt: "🚆 На транспорте",
+    tripTitle: "Дорога к Barfer's", car: "🚗 На машине · через A10", pt: "🚆 На транспорте",
     arrive: t => `прибытие ${t}`, km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", trafficExtra: n => `+${n}′ из-за пробок`, trafficFree: "дороги свободны", freeTime: n => `без пробок ${n}′`, openMaps: "Открыть в Картах ↗",
     leaveIn: n => n <= 0 ? "выходи сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
     faster: (c, t) => `⚡ быстрее: ${c} · прибытие ${t}`, myDisrupted: "⚠ на вашем маршруте сбой — см. варианты", noConn: "Нет данных о маршруте",
@@ -291,7 +291,7 @@ const I18N = {
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
-    tripTitle: "Weg zu Barfer's", car: "🚗 Auto", pt: "🚆 Öffis",
+    tripTitle: "Weg zu Barfer's", car: "🚗 Auto · über A10", pt: "🚆 Öffis",
     arrive: t => `Ankunft ${t}`, km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", trafficExtra: n => `+${n}′ durch Verkehr`, trafficFree: "freie Fahrt", freeTime: n => `ohne Verkehr ${n}′`, openMaps: "In Karten öffnen ↗",
     leaveIn: n => n <= 0 ? "jetzt los" : `los in ${n}′`, myRoute: "Meine Route (255 › S2)", others: "Alternativen",
     faster: (c, t) => `⚡ schneller: ${c} · Ankunft ${t}`, myDisrupted: "⚠ Störung auf deiner Route — siehe Alternativen", noConn: "Keine Verbindungsdaten",
@@ -683,15 +683,16 @@ function renderWeather(){
 // ---- Trip to Barfer's ----
 const DEST = { lat: 52.429324, lon: 13.375203, label: "Großbeerenstraße 164, 12277 Berlin" };
 const CAR_FROM = { lat: 52.5551, lon: 13.4376, label: "Hamburger Platz, 13086 Berlin" };
+const CAR_VIA = { lat: 52.32577675927017, lon: 13.746683846652166 };   // point on the A10 the route must pass
 const MARIENFELDE = "900073101", PANKOW = "900130002", FINAL_WALK = 10; // minutes
-const MAPS_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=" + encodeURIComponent(CAR_FROM.label) + "&destination=" + encodeURIComponent(DEST.label);
+const MAPS_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=" + encodeURIComponent(CAR_FROM.label) + "&destination=" + encodeURIComponent(DEST.label) + "&waypoints=" + CAR_VIA.lat + "," + CAR_VIA.lon;
 let car = null, pt = { mine: [], alts: [], loaded: false, failed: false }, ptOpen = false;
 
 const TOMTOM_KEY = "VgJcXmIwj94DSnz390KGgmawhYeXwDWe";
 async function loadCar(){
   // 1) TomTom with live traffic
   try{
-    const r = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${CAR_FROM.lat},${CAR_FROM.lon}:${DEST.lat},${DEST.lon}/json`
+    const r = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${CAR_FROM.lat},${CAR_FROM.lon}:${CAR_VIA.lat},${CAR_VIA.lon}:${DEST.lat},${DEST.lon}/json`
       + `?key=${TOMTOM_KEY}&traffic=true&travelMode=car&routeType=fastest&computeTravelTimeFor=all`);
     if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json(); const sm = j.routes && j.routes[0] && j.routes[0].summary;
@@ -703,7 +704,7 @@ async function loadCar(){
   }catch(e){ /* fall back to typical time */ }
   // 2) OpenStreetMap router, no traffic
   try{
-    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${CAR_FROM.lon},${CAR_FROM.lat};${DEST.lon},${DEST.lat}?overview=false`);
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${CAR_FROM.lon},${CAR_FROM.lat};${CAR_VIA.lon},${CAR_VIA.lat};${DEST.lon},${DEST.lat}?overview=false`);
     if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json(); const rt = j.routes && j.routes[0];
     if (rt) car = { min: Math.round(rt.duration / 60), km: Math.round(rt.distance / 100) / 10, live: false };
