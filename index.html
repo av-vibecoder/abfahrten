@@ -78,6 +78,10 @@ header{position:relative}
 .trip-chain{display:flex;flex-wrap:wrap;align-items:center;margin-top:6px}
 .trip-chain>*{margin-right:4px}
 .trip-chain .sep{color:var(--muted);font-size:12px}
+.tr{font-weight:700}
+.tr.ok{color:var(--ok)}
+.tr.mid{color:var(--warn)}
+.tr.bad{color:var(--bad)}
 .trip-alt{margin-top:7px;font-size:12px;color:var(--warn);font-weight:600}
 .maps-btn{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel-2)}
 .trip-panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -257,7 +261,7 @@ const I18N = {
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
     tripTitle: "Дорога к Barfer's", car: "🚗 На машине", pt: "🚆 На транспорте",
-    arrive: t => `прибытие ${t}`, km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", openMaps: "Открыть в Картах ↗",
+    arrive: t => `прибытие ${t}`, km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", trafficExtra: n => `+${n}′ из-за пробок`, trafficFree: "дороги свободны", freeTime: n => `без пробок ${n}′`, openMaps: "Открыть в Картах ↗",
     leaveIn: n => n <= 0 ? "выходи сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
     faster: (c, t) => `⚡ быстрее: ${c} · прибытие ${t}`, myDisrupted: "⚠ на вашем маршруте сбой — см. варианты", noConn: "Нет данных о маршруте",
     inclWalk: "включая ~10′ пешком от S Marienfelde", cancelledShort: "отменён", loadingShort: "Загрузка…",
@@ -267,7 +271,7 @@ const I18N = {
     now: "сейчас", onTime: "вовремя", platform: "платф.", walk: "🚶 пешком",
     empty: n => `Нет отправлений в ближайшие ${n} минут.`, stale: e => `⚠︎ Данные могут быть устаревшими (${e})`, error: "Ошибка",
     footer: `Время пешком оценено по прямой × 1,35 (поправка на маршрут) при обычном темпе. «Выход: N′» — через сколько минут нужно выйти из дома, чтобы успеть.
-      Данные в реальном времени: ${LINKS} (HAFAS, BVG/VBB), обновление каждые 30 секунд. Погода: ${OM}.`,
+      Данные в реальном времени: ${LINKS} (HAFAS, BVG/VBB), обновление каждые 30 секунд. Погода: ${OM}. Время на машине с учётом пробок: TomTom.`,
     wmo: {0:"Ясно",1:"Преимущественно ясно",2:"Переменная облачность",3:"Пасмурно",45:"Туман",48:"Туман с изморозью",
       51:"Слабая морось",53:"Морось",55:"Сильная морось",56:"Ледяная морось",57:"Ледяная морось",
       61:"Небольшой дождь",63:"Дождь",65:"Сильный дождь",66:"Ледяной дождь",67:"Ледяной дождь",
@@ -288,7 +292,7 @@ const I18N = {
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
     tripTitle: "Weg zu Barfer's", car: "🚗 Auto", pt: "🚆 Öffis",
-    arrive: t => `Ankunft ${t}`, km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", openMaps: "In Karten öffnen ↗",
+    arrive: t => `Ankunft ${t}`, km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", trafficExtra: n => `+${n}′ durch Verkehr`, trafficFree: "freie Fahrt", freeTime: n => `ohne Verkehr ${n}′`, openMaps: "In Karten öffnen ↗",
     leaveIn: n => n <= 0 ? "jetzt los" : `los in ${n}′`, myRoute: "Meine Route (255 › S2)", others: "Alternativen",
     faster: (c, t) => `⚡ schneller: ${c} · Ankunft ${t}`, myDisrupted: "⚠ Störung auf deiner Route — siehe Alternativen", noConn: "Keine Verbindungsdaten",
     inclWalk: "inkl. ~10′ Fußweg ab S Marienfelde", cancelledShort: "fällt aus", loadingShort: "Lade…",
@@ -298,7 +302,7 @@ const I18N = {
     now: "jetzt", onTime: "pünktlich", platform: "Steig", walk: "🚶 zu Fuß",
     empty: n => `Keine Abfahrten in den nächsten ${n} Minuten.`, stale: e => `⚠︎ Daten evtl. veraltet (${e})`, error: "Fehler",
     footer: `Fußwege geschätzt aus Luftlinie × 1,35 (Umwegfaktor) bei normalem Gehtempo. „Los in“ = Minuten bis du losgehen musst, um die Abfahrt zu erreichen.
-      Echtzeitdaten über ${LINKS} (HAFAS, BVG/VBB), Aktualisierung alle 30&nbsp;Sekunden. Wetter: ${OM}.`,
+      Echtzeitdaten über ${LINKS} (HAFAS, BVG/VBB), Aktualisierung alle 30&nbsp;Sekunden. Wetter: ${OM}. Autofahrzeit mit Verkehrslage: TomTom.`,
     wmo: {0:"Klar",1:"Überwiegend klar",2:"Teils bewölkt",3:"Bedeckt",45:"Nebel",48:"Reifnebel",
       51:"Leichter Niesel",53:"Niesel",55:"Starker Niesel",56:"Gefrierender Niesel",57:"Gefrierender Niesel",
       61:"Leichter Regen",63:"Regen",65:"Starker Regen",66:"Gefrierender Regen",67:"Gefrierender Regen",
@@ -683,12 +687,26 @@ const MARIENFELDE = "900073101", PANKOW = "900130002", FINAL_WALK = 10; // minut
 const MAPS_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=" + encodeURIComponent(CAR_FROM.label) + "&destination=" + encodeURIComponent(DEST.label);
 let car = null, pt = { mine: [], alts: [], loaded: false, failed: false }, ptOpen = false;
 
+const TOMTOM_KEY = "VgJcXmIwj94DSnz390KGgmawhYeXwDWe";
 async function loadCar(){
+  // 1) TomTom with live traffic
+  try{
+    const r = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${CAR_FROM.lat},${CAR_FROM.lon}:${DEST.lat},${DEST.lon}/json`
+      + `?key=${TOMTOM_KEY}&traffic=true&travelMode=car&routeType=fastest&computeTravelTimeFor=all`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json(); const sm = j.routes && j.routes[0] && j.routes[0].summary;
+    if (!sm) throw new Error("no route");
+    const min = Math.round(sm.travelTimeInSeconds / 60);
+    const free = Math.round((sm.noTrafficTravelTimeInSeconds || sm.travelTimeInSeconds) / 60);
+    car = { min, km: Math.round(sm.lengthInMeters / 100) / 10, live: true, extra: Math.max(0, min - free), free, at: new Date() };
+    renderTrip(); return;
+  }catch(e){ /* fall back to typical time */ }
+  // 2) OpenStreetMap router, no traffic
   try{
     const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${CAR_FROM.lon},${CAR_FROM.lat};${DEST.lon},${DEST.lat}?overview=false`);
     if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json(); const rt = j.routes && j.routes[0];
-    if (rt) car = { min: Math.round(rt.duration / 60), km: Math.round(rt.distance / 100) / 10 };
+    if (rt) car = { min: Math.round(rt.duration / 60), km: Math.round(rt.distance / 100) / 10, live: false };
   }catch(e){ /* keep last value */ }
   renderTrip();
 }
@@ -741,7 +759,9 @@ function renderTrip(){
   // car
   $("carTile").innerHTML = `<div class="trip-k"><span>${t.car}</span></div>` + (car
     ? `<div class="trip-big">${car.min}′<small>${t.arrive(hm(new Date(now.getTime() + car.min * 60000)))}</small></div>
-       <div class="trip-sub">${t.km(car.km.toLocaleString(lang === "ru" ? "ru-RU" : "de-DE"))} · ${t.noTraffic}</div>`
+       <div class="trip-sub">${t.km(car.km.toLocaleString(lang === "ru" ? "ru-RU" : "de-DE"))} · ${car.live
+          ? `<span class="tr ${car.extra > 15 ? "bad" : car.extra > 5 ? "mid" : "ok"}">${car.extra > 0 ? t.trafficExtra(car.extra) : t.trafficFree}</span> · ${t.freeTime(car.free)}`
+          : t.noTraffic}</div>`
     : `<div class="trip-sub">${t.loadingShort}</div>`)
     + `<a class="maps-btn" href="${MAPS_URL}" target="_blank" rel="noopener">${t.openMaps}</a>`;
   // public transport
@@ -777,7 +797,7 @@ function renderTrip(){
   }
 }
 $("ptTile").onclick = () => { ptOpen = !ptOpen; renderTrip(); };
-loadCar(); setInterval(loadCar, 60 * 60000);
+loadCar(); setInterval(() => { if (!document.hidden) loadCar(); }, 5 * 60000);
 loadPT(); setInterval(loadPT, 2 * 60000);
 setInterval(renderTrip, 15000);
 
