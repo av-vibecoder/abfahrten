@@ -2,14 +2,20 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Отправления">
+<meta name="theme-color" content="#f2f2f5">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
 <title>Отправления</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f2f2f5; --panel:#ffffff; --panel-2:#f7f7f9; --ink:#16161a; --muted:#64646b; --line:#e3e3e8;
-  --accent:#f0d722; --accent-ink:#16161a; --ok:#1a8f4a; --warn:#c96a00; --bad:#c62828;
+  --accent:#f0d722; --accent-ink:#16161a; --ok:#137a3e; --warn:#a55500; --bad:#c62828; --focus:#1f5fd6;
   --tram:#be1414; --bus:#a5027d; --subway:#115d91; --suburban:#008d4f; --regional:#e3000f; --night:#2b2b6e;
   --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
 }
@@ -20,10 +26,10 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 48px}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 48px;padding-top:max(24px,env(safe-area-inset-top));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-bottom:max(48px,env(safe-area-inset-bottom))}
 header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
 .brand{display:flex;gap:14px;align-items:center}
-.logo{width:48px;height:48px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.logo{width:48px;height:48px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
 h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02em}
 .sub{color:var(--muted);font-size:14px;margin-top:3px}
 .clock{font-family:"JetBrains Mono",monospace;font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1}
@@ -35,11 +41,11 @@ header{position:relative}
 .topbar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .lang{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
 .theme-btn{width:34px;height:34px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center}
-.theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.theme-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .lang button{border:0;background:transparent;color:var(--muted);font:700 12px Inter,sans-serif;letter-spacing:.04em;padding:0 10px;height:28px;border-radius:7px;cursor:pointer}
 .lang button.on{background:var(--ink);color:var(--bg)}
-.lang button:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.status{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.lang button:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.status{font-size:12px;color:var(--muted);margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 var(--ok);animation:pulse 2s infinite}
 .dot.err{background:var(--bad);animation:none}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
@@ -48,7 +54,9 @@ header{position:relative}
 .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
 .seg button{border:0;background:transparent;color:var(--muted);font:600 13px Inter,sans-serif;padding:7px 12px;border-radius:7px;cursor:pointer}
 .seg button.on{background:var(--ink);color:var(--bg)}
-.toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;user-select:none}
+.chip-toggle{display:inline-flex;align-items:center;min-height:32px;margin-left:8px;font-size:12px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:0 11px;cursor:pointer;user-select:none;white-space:nowrap}
+.chip-toggle input{margin:0 6px 0 0;accent-color:var(--ink)}
+.chip-toggle:focus-within{outline:2px solid var(--focus);outline-offset:2px}
 .toggle input{accent-color:var(--ink)}
 .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
 
@@ -62,12 +70,24 @@ header{position:relative}
 .wx-main b{font-size:28px;line-height:1.05}
 .wx-tile .wx-ico{font-size:34px;line-height:1;overflow:visible;color:inherit;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 @media (max-width:700px){.wx{grid-template-columns:1fr 1fr}}
+.wx-compact{display:none}
+@media (max-width:560px){
+  .wx{display:none}
+  .wx-compact{display:flex;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:14px}
+  .wc-ico{font-size:30px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;margin-right:10px}
+  .wc-temp{font-family:"JetBrains Mono",monospace;font-size:26px;margin-right:10px}
+  .wc-desc{flex:1;min-width:0;font-size:13px;color:var(--muted);line-height:1.35}
+  .wc-meta{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:700;text-align:right;line-height:1.35;white-space:nowrap}
+  /* departures first, the trip tiles after them */
+  .wrap{display:flex;flex-direction:column}
+  .wrap>header{order:1}.wrap>.wx-compact{order:2}.wrap>.grid{order:3}.wrap>.sr-dep{order:3}.wrap>.trip{order:4;margin-top:18px}.wrap>footer{order:5}
+}
 .trip{margin-bottom:18px}
-.trip-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 2px 8px}
+.trip-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 2px 8px}
 .trip-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .trip-tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;display:flex;flex-direction:column}
 .trip-btn{cursor:pointer;display:block;width:100%}
-.trip-btn:focus-visible,.maps-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.trip-btn:focus-visible,.maps-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .trip-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;justify-content:space-between}
 .trip-big{font-family:"JetBrains Mono",monospace;font-size:28px;font-weight:700;line-height:1.1;margin-top:6px;font-variant-numeric:tabular-nums}
 .trip-arr{font-size:15px;font-weight:700;margin-top:2px}
@@ -75,7 +95,7 @@ header{position:relative}
 .trip-chain.inline{display:inline-flex;margin:0 6px 0 0}
 .trip-foot{margin-top:auto;padding-top:10px}
 .trip-action{display:inline-flex;align-items:center;min-height:32px;font:700 13px Inter,sans-serif;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:var(--panel-2);cursor:pointer}
-.trip-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.trip-action:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .trip-big small{font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:var(--muted);margin-left:6px}
 .trip-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
 .trip-chain{display:flex;flex-wrap:wrap;align-items:center;margin-top:6px}
@@ -104,7 +124,7 @@ header{position:relative}
 .walk{flex:none;text-align:center;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:6px 10px;min-width:64px}
 .walk b{display:block;font-size:20px;line-height:1.1;font-family:"JetBrains Mono",monospace}
 .walk span{font-size:11px;font-weight:600}
-.walk small{display:block;font-size:10px;opacity:.7}
+.walk small{display:block;font-size:12px;opacity:.8}
 
 table{width:100%;border-collapse:collapse}
 td{padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:15px}
@@ -117,7 +137,8 @@ td.m{text-align:right;white-space:nowrap;font-family:"JetBrains Mono",monospace}
 td.m b{font-size:20px}
 td.m .c{font-size:12px;color:var(--muted);display:block}
 td.lv{text-align:right;white-space:nowrap;width:1%}
-tr.missed td{opacity:.38}
+tr.missed td{opacity:.62}
+tr.missed td.d .t{text-decoration:line-through;text-decoration-color:var(--muted)}
 tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
 .late{color:var(--warn);font-weight:700}
 .ontime{color:var(--ok)}
@@ -134,19 +155,19 @@ tr.cancel td.d .t{text-decoration:line-through;color:var(--bad)}
 
 .pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted)}
 .pill.now{background:var(--bad);border-color:var(--bad);color:#fff;animation:blink 1s steps(2,start) infinite}
-.pill.soon{background:rgba(201,106,0,.16);background:color-mix(in srgb,var(--warn) 18%,transparent);border-color:var(--warn);color:var(--warn)}
-.pill.ok{background:rgba(26,143,74,.14);border-color:rgba(26,143,74,.5);background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
+.pill.soon{background:var(--panel);border-color:var(--ink);color:var(--ink)}
+.pill.ok{background:rgba(19,122,62,.10);border-color:rgba(19,122,62,.45);background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
 @keyframes blink{to{opacity:.55}}
 .more{display:block;width:100%;border:0;border-top:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:600 13px Inter,sans-serif;padding:11px 16px;cursor:pointer;text-align:center}
 .more:hover{background:var(--line)}
-.more:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.more:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .has-warn{position:relative;display:inline-block}
 .has-warn::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--panel)}
-.alert-bar{display:flex;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:rgba(201,106,0,.12);color:var(--ink);font:600 13px Inter,sans-serif;padding:9px 16px;cursor:pointer;text-align:left}
+.alert-bar{display:flex;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:rgba(165,85,0,.10);color:var(--ink);font:600 13px Inter,sans-serif;padding:9px 16px;cursor:pointer;text-align:left}
 .alert-bar .ai{color:var(--warn);margin-right:8px;flex:none}
 .alert-bar .at{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .alert-bar .ac{flex:none;margin-left:8px;color:var(--muted)}
-.alert-bar:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.alert-bar:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .alert-list{padding:4px 16px 10px;border-bottom:1px solid var(--line);background:var(--panel-2)}
 .alert-item{padding:8px 0;border-bottom:1px dashed var(--line)}
 .alert-item:last-of-type{border-bottom:0}
@@ -169,15 +190,22 @@ footer a{color:inherit}
   td{padding:9px 12px;font-size:14px}
   td.m b{font-size:17px}
   td.m .pt, td.m .ontime{display:none}
-  td.d .t{white-space:normal;overflow:visible;line-height:1.25}
+  td.d .t{white-space:normal;overflow:visible;line-height:1.25;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;word-wrap:break-word}
+  td.m{padding-left:6px}
   td.l{width:50px}
   .badge{min-width:38px}
   .right{text-align:left;align-items:flex-start}
-  .topbar{position:absolute;top:0;right:0;margin:0}
-  .brand{padding-right:118px;gap:10px}
+  .topbar{position:absolute;top:-4px;right:0;margin:0}
+  .brand{padding-right:134px;gap:10px}
   .logo{width:38px;height:38px;font-size:18px;border-radius:10px}
   h1{white-space:nowrap}
   .status{justify-content:flex-start}
+  .lang button{height:40px;padding:0 10px}
+  .theme-btn{width:44px;height:44px}
+  .more{padding:14px 16px}
+  .alert-bar{padding:13px 16px}
+  .trip-action{min-height:44px}
+  .chip-toggle{min-height:44px}
 }
 @supports not (inset:0){
   .trip-row>*+*{margin-top:10px}
@@ -190,6 +218,10 @@ footer a{color:inherit}
   .lang button+button{margin-left:2px}
   .topbar>*+*{margin-left:8px}
 }
+@media (prefers-reduced-motion: reduce){
+  .dot,.pill.now,.skeleton{animation:none !important}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
@@ -210,10 +242,13 @@ footer a{color:inherit}
       </div>
       <div class="clock" id="clock">--:--<small>:--</small></div>
       <div class="date" id="date"></div>
-      <div class="status"><span class="dot" id="dot"></span><span id="status"></span></div>
+      <div class="status"><span class="dot" id="dot" aria-hidden="true"></span><span id="status" role="status" aria-live="polite"></span>
+        <label class="chip-toggle"><input type="checkbox" id="hideMissed"> <span data-i18n="hideMissed"></span></label></div>
     </div>
   </header>
 
+  <h2 class="sr-only" data-i18n="wxAria"></h2>
+  <div class="wx-compact" id="wxCompact" aria-hidden="true"></div>
   <section class="wx" id="wx">
     <div class="wx-tile wx-main"><span class="wx-ico" id="wxIco">·</span>
       <div><b id="wxTemp">–°</b><span id="wxDesc"></span></div></div>
@@ -223,7 +258,7 @@ footer a{color:inherit}
   </section>
 
   <section class="trip" id="trip">
-    <div class="trip-h" data-i18n="tripTitle"></div>
+    <h2 class="trip-h" data-i18n="tripTitle"></h2>
     <div class="trip-row">
       <div class="trip-tile" id="carTile"></div>
       <div class="trip-tile" id="ptTile"></div>
@@ -231,12 +266,9 @@ footer a{color:inherit}
     <div class="trip-panel" id="ptPanel" hidden></div>
   </section>
 
-  <div class="controls">
-    <label class="toggle"><input type="checkbox" id="hideMissed"> <span data-i18n="hideMissed"></span></label>
-    <button class="icon-btn" id="refresh" data-i18n="refresh" data-i18n-title="refreshTitle"></button>
-  </div>
 
 
+  <h2 class="sr-only sr-dep" data-i18n="depHeading"></h2>
   <div class="grid" id="grid"></div>
 
   <footer data-i18n="footer"></footer>
@@ -259,8 +291,8 @@ const I18N = {
   ru: {
     docTitle: "Отправления", title: "Отправления 🏠",
     sub: "13086 Берлин-Вайсензе · BVG/VBB в реальном времени · с учётом пути пешком",
-    loading: "Загрузка…", updating: "Обновление…", live: s => `Онлайн · обновлено ${s} с назад`,
-    hideMissed: "Скрыть, на что не успеть", refresh: "↻ Обновить", refreshTitle: "Обновить сейчас", themeTitle: "Тёмная тема",
+    loading: "Загрузка…", updating: "Обновление…", live: s => s < 60 ? "Онлайн · обновлено только что" : `Онлайн · обновлено ${Math.floor(s / 60)} мин назад`,
+    hideMissed: "Только успеваю", refresh: "↻ Обновить", refreshTitle: "Обновить сейчас", themeTitle: "Тёмная тема",
     wxAria: "Погода", wxLoading: "Загрузка погоды…", wxNA: "Погода недоступна",
     wxRain: "Осадки", wxToday: "Сегодня", wxSun: "Солнце", mm: "мм",
     rainChance: n => `${n}% в ближайшие 3 ч`, rainNow: "сейчас",
@@ -268,7 +300,7 @@ const I18N = {
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
-    tripTitle: "Дорога к Barfer's", car: "🚗 На машине · через A10", pt: "🚆 На транспорте · 255 › S2",
+    tripTitle: "Дорога к Barfer's", depHeading: "Отправления с ближайших остановок", car: "🚗 На машине · через A10", pt: "🚆 На транспорте · 255 › S2",
     arrive: t => `прибытие ${t}`, departNow: "выезд сейчас", plusWalk: "+10′ пешком", optionsMore: "Варианты ▾", optionsLess: "Свернуть ▴", km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", trafficExtra: n => `+${n}′ из-за пробок`, trafficFree: "дороги свободны", freeTime: n => `без пробок ${n}′`, openMaps: "Открыть в Картах ↗",
     leaveIn: n => n <= 0 ? "выход сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
     faster: (c, t) => `⚡ быстрее: ${c} · прибытие ${t}`, myDisrupted: "⚠ на вашем маршруте сбой — см. варианты", noConn: "Нет данных о маршруте",
@@ -290,8 +322,8 @@ const I18N = {
   de: {
     docTitle: "Abfahrten", title: "Abfahrten 🏠",
     sub: "13086 Berlin-Weißensee · Live-Daten von BVG/VBB · inkl. Fußweg",
-    loading: "Lade…", updating: "Aktualisiere…", live: s => `Live · aktualisiert vor ${s}s`,
-    hideMissed: "Nicht erreichbare ausblenden", refresh: "↻ Aktualisieren", refreshTitle: "Jetzt aktualisieren", themeTitle: "Dunkles Design",
+    loading: "Lade…", updating: "Aktualisiere…", live: s => s < 60 ? "Live · gerade aktualisiert" : `Live · aktualisiert vor ${Math.floor(s / 60)} min`,
+    hideMissed: "Nur erreichbare", refresh: "↻ Aktualisieren", refreshTitle: "Jetzt aktualisieren", themeTitle: "Dunkles Design",
     wxAria: "Wetter", wxLoading: "Wetter lädt…", wxNA: "Wetter nicht verfügbar",
     wxRain: "Niederschlag", wxToday: "Heute", wxSun: "Sonne", mm: "mm",
     rainChance: n => `${n}% in den nächsten 3 h`, rainNow: "jetzt",
@@ -299,7 +331,7 @@ const I18N = {
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
-    tripTitle: "Weg zu Barfer's", car: "🚗 Auto · über A10", pt: "🚆 Öffis · 255 › S2",
+    tripTitle: "Weg zu Barfer's", depHeading: "Abfahrten an den nächsten Haltestellen", car: "🚗 Auto · über A10", pt: "🚆 Öffis · 255 › S2",
     arrive: t => `Ankunft ${t}`, departNow: "Abfahrt jetzt", plusWalk: "+10′ zu Fuß", optionsMore: "Verbindungen ▾", optionsLess: "Weniger ▴", km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", trafficExtra: n => `+${n}′ durch Verkehr`, trafficFree: "freie Fahrt", freeTime: n => `ohne Verkehr ${n}′`, openMaps: "In Karten öffnen ↗",
     leaveIn: n => n <= 0 ? "jetzt los" : `los in ${n}′`, myRoute: "Meine Route (255 › S2)", others: "Alternativen",
     faster: (c, t) => `⚡ schneller: ${c} · Ankunft ${t}`, myDisrupted: "⚠ Störung auf deiner Route — siehe Alternativen", noConn: "Keine Verbindungsdaten",
@@ -444,7 +476,6 @@ async function loadStop(s){
 const dot = document.getElementById("dot"), statusEl = document.getElementById("status");
 let lastUpdate = null;
 async function refresh(){
-  statusEl.textContent = T().updating;
   await Promise.all(STOPS.map(loadStop));
   lastUpdate = new Date();
   if (!warnStarted && STOPS.some(s => data[s.id] && data[s.id].deps.length)){ warnStarted = true; loadTripWarnings(); }
@@ -520,7 +551,7 @@ function render(){
       rows = shown.length ? `<table>${shown.map(e => `
         <tr class="${e.missed ? "missed" : ""} ${e.cancelled ? "cancel" : ""}">
           <td class="l">${badge(e.dep.line)}</td>
-          <td class="d"><div class="t">${esc(cleanDir(e.dep.direction))}</div>
+          <td class="d"><div class="t" lang="de">${esc(cleanDir(e.dep.direction))}</div>
             <div class="s">${hm(e.when)}${e.dep.platform ? " · " + T().platform + " " + esc(e.dep.platform) : ""}</div></td>
           <td class="m"><b>${minsLabel(e)}</b>${delayLabel(e)}</td>
           <td class="lv">${leavePill(e)}</td>
@@ -563,7 +594,7 @@ function render(){
 
   if (lastUpdate){
     const ago = Math.round((now - lastUpdate) / 1000);
-    statusEl.textContent = T().live(ago);
+    const st = T().live(ago); if (statusEl.textContent !== st) statusEl.textContent = st;
   }
 }
 
@@ -620,7 +651,6 @@ function tick(){
 const hm_ = document.getElementById("hideMissed");
 hm_.checked = hideMissed;
 hm_.onchange = () => { hideMissed = hm_.checked; try { localStorage.setItem("hideMissed", hideMissed ? "1" : "0"); } catch (e) {} render(); };
-document.getElementById("refresh").onclick = refresh;
 document.getElementById("grid").addEventListener("click", ev => {
   if (!ev.target.closest) return;
   const a = ev.target.closest(".alert-bar");
@@ -695,6 +725,11 @@ function renderWeather(){
   else { main = `↑ ${hhmm(d.sunrise[1])}`; sub = t.sunTomorrow(hhmm(set)); }
   $("wxSun").textContent = main;
   $("wxSunSub").textContent = sub;
+  // one-line version for phones
+  $("wxCompact").innerHTML = `<span class="wc-ico">${$("wxIco").textContent}</span>
+    <b class="wc-temp">${Math.round(c.temperature_2m)}°</b>
+    <span class="wc-desc">${esc(t.wmo[c.weather_code] || "")}<br>${Math.round(d.temperature_2m_min[0])}° / ${Math.round(d.temperature_2m_max[0])}°</span>
+    <span class="wc-meta">💧 ${chance != null ? chance + "%" : fmt1(c.precipitation) + " " + t.mm}<br>${esc(main)}</span>`;
 }
 
 // ---- Trip to Barfer's ----
