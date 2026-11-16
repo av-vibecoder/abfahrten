@@ -8,16 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f3f1ea; --panel:#ffffff; --panel-2:#f8f7f2; --ink:#16161a; --muted:#6b6a66; --line:#e4e1d8;
+  --bg:#f2f2f5; --panel:#ffffff; --panel-2:#f7f7f9; --ink:#16161a; --muted:#64646b; --line:#e3e3e8;
   --accent:#f0d722; --accent-ink:#16161a; --ok:#1a8f4a; --warn:#c96a00; --bad:#c62828;
   --tram:#be1414; --bus:#a5027d; --subway:#115d91; --suburban:#008d4f; --regional:#e3000f; --night:#2b2b6e;
   --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0e0f12; --panel:#17181d; --panel-2:#1d1f25; --ink:#f2f1ec; --muted:#9a9a9f; --line:#2a2c33;
-    --ok:#3ccf7a; --warn:#ffae3d; --bad:#ff5b5b; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
-  }
 }
 :root[data-theme="dark"]{
   --bg:#0e0f12; --panel:#17181d; --panel-2:#1d1f25; --ink:#f2f1ec; --muted:#9a9a9f; --line:#2a2c33;
@@ -38,8 +32,11 @@ h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02e
 .date .hol{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700}
 .right{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
 header{position:relative}
-.lang{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px;margin-bottom:8px}
-.lang button{border:0;background:transparent;color:var(--muted);font:700 12px Inter,sans-serif;letter-spacing:.04em;padding:5px 9px;border-radius:7px;cursor:pointer}
+.topbar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.lang{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
+.theme-btn{width:34px;height:34px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lang button{border:0;background:transparent;color:var(--muted);font:700 12px Inter,sans-serif;letter-spacing:.04em;padding:0 10px;height:28px;border-radius:7px;cursor:pointer}
 .lang button.on{background:var(--ink);color:var(--bg)}
 .lang button:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .status{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center;justify-content:flex-end}
@@ -67,12 +64,18 @@ header{position:relative}
 @media (max-width:700px){.wx{grid-template-columns:1fr 1fr}}
 .trip{margin-bottom:18px}
 .trip-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 2px 8px}
-.trip-row{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
-.trip-tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;text-align:left;color:var(--ink);font:inherit}
+.trip-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trip-tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;display:flex;flex-direction:column}
 .trip-btn{cursor:pointer;display:block;width:100%}
 .trip-btn:focus-visible,.maps-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .trip-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;justify-content:space-between}
-.trip-big{font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.trip-big{font-family:"JetBrains Mono",monospace;font-size:28px;font-weight:700;line-height:1.1;margin-top:6px;font-variant-numeric:tabular-nums}
+.trip-arr{font-size:15px;font-weight:700;margin-top:2px}
+.trip-det{display:flex;flex-wrap:wrap;align-items:center}
+.trip-chain.inline{display:inline-flex;margin:0 6px 0 0}
+.trip-foot{margin-top:auto;padding-top:10px}
+.trip-action{display:inline-flex;align-items:center;min-height:32px;font:700 13px Inter,sans-serif;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:var(--panel-2);cursor:pointer}
+.trip-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .trip-big small{font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:var(--muted);margin-left:6px}
 .trip-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
 .trip-chain{display:flex;flex-wrap:wrap;align-items:center;margin-top:6px}
@@ -170,8 +173,10 @@ footer a{color:inherit}
   td.l{width:50px}
   .badge{min-width:38px}
   .right{text-align:left;align-items:flex-start}
-  .lang{position:absolute;top:0;right:0;margin:0}
-  .brand{padding-right:96px}
+  .topbar{position:absolute;top:0;right:0;margin:0}
+  .brand{padding-right:118px;gap:10px}
+  .logo{width:38px;height:38px;font-size:18px;border-radius:10px}
+  h1{white-space:nowrap}
   .status{justify-content:flex-start}
 }
 @supports not (inset:0){
@@ -183,6 +188,7 @@ footer a{color:inherit}
   .card-head>*+*{margin-left:12px}
   .lines>*{margin:0 4px 4px 0}
   .lang button+button{margin-left:2px}
+  .topbar>*+*{margin-left:8px}
 }
 </style>
 </head>
@@ -196,8 +202,11 @@ footer a{color:inherit}
       </div>
     </div>
     <div class="right">
-      <div class="lang" role="group" aria-label="Язык / Sprache">
-        <button id="langRU" data-lang="ru" lang="ru">RU</button><button id="langDE" data-lang="de" lang="de">DE</button>
+      <div class="topbar">
+        <button class="theme-btn" id="theme" data-i18n-title="themeTitle" data-i18n-aria="themeTitle">☾</button>
+        <div class="lang" role="group" aria-label="Язык / Sprache">
+          <button id="langRU" data-lang="ru" lang="ru">RU</button><button id="langDE" data-lang="de" lang="de">DE</button>
+        </div>
       </div>
       <div class="clock" id="clock">--:--<small>:--</small></div>
       <div class="date" id="date"></div>
@@ -217,7 +226,7 @@ footer a{color:inherit}
     <div class="trip-h" data-i18n="tripTitle"></div>
     <div class="trip-row">
       <div class="trip-tile" id="carTile"></div>
-      <button class="trip-tile trip-btn" id="ptTile" aria-expanded="false"></button>
+      <div class="trip-tile" id="ptTile"></div>
     </div>
     <div class="trip-panel" id="ptPanel" hidden></div>
   </section>
@@ -225,7 +234,6 @@ footer a{color:inherit}
   <div class="controls">
     <label class="toggle"><input type="checkbox" id="hideMissed"> <span data-i18n="hideMissed"></span></label>
     <button class="icon-btn" id="refresh" data-i18n="refresh" data-i18n-title="refreshTitle"></button>
-    <button class="icon-btn" id="theme" data-i18n-title="themeTitle">◐</button>
   </div>
 
 
@@ -252,7 +260,7 @@ const I18N = {
     docTitle: "Отправления", title: "Отправления 🏠",
     sub: "13086 Берлин-Вайсензе · BVG/VBB в реальном времени · с учётом пути пешком",
     loading: "Загрузка…", updating: "Обновление…", live: s => `Онлайн · обновлено ${s} с назад`,
-    hideMissed: "Скрыть, на что не успеть", refresh: "↻ Обновить", refreshTitle: "Обновить сейчас", themeTitle: "Светлая / тёмная тема",
+    hideMissed: "Скрыть, на что не успеть", refresh: "↻ Обновить", refreshTitle: "Обновить сейчас", themeTitle: "Тёмная тема",
     wxAria: "Погода", wxLoading: "Загрузка погоды…", wxNA: "Погода недоступна",
     wxRain: "Осадки", wxToday: "Сегодня", wxSun: "Солнце", mm: "мм",
     rainChance: n => `${n}% в ближайшие 3 ч`, rainNow: "сейчас",
@@ -260,9 +268,9 @@ const I18N = {
     sunSetAt: t => `закат в ${t}`, sunRoseAt: t => `восход был в ${t}`, sunTomorrow: t => `завтра · сегодня закат ${t}`,
     cancelled: "отменён", missed: "не успеть", goNow: "Выходи!", goIn: n => `Выход: ${n}′`,
     more: n => `▾ Ещё ${n}`, less: "▴ Свернуть",
-    tripTitle: "Дорога к Barfer's", car: "🚗 На машине · через A10", pt: "🚆 На транспорте",
-    arrive: t => `прибытие ${t}`, km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", trafficExtra: n => `+${n}′ из-за пробок`, trafficFree: "дороги свободны", freeTime: n => `без пробок ${n}′`, openMaps: "Открыть в Картах ↗",
-    leaveIn: n => n <= 0 ? "выходи сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
+    tripTitle: "Дорога к Barfer's", car: "🚗 На машине · через A10", pt: "🚆 На транспорте · 255 › S2",
+    arrive: t => `прибытие ${t}`, departNow: "выезд сейчас", plusWalk: "+10′ пешком", optionsMore: "Варианты ▾", optionsLess: "Свернуть ▴", km: k => `${k} км`, noTraffic: "обычное время, без учёта пробок", trafficExtra: n => `+${n}′ из-за пробок`, trafficFree: "дороги свободны", freeTime: n => `без пробок ${n}′`, openMaps: "Открыть в Картах ↗",
+    leaveIn: n => n <= 0 ? "выход сейчас" : `выход через ${n}′`, myRoute: "Мой маршрут (255 › S2)", others: "Другие варианты",
     faster: (c, t) => `⚡ быстрее: ${c} · прибытие ${t}`, myDisrupted: "⚠ на вашем маршруте сбой — см. варианты", noConn: "Нет данных о маршруте",
     inclWalk: "включая ~10′ пешком от S Marienfelde", cancelledShort: "отменён", loadingShort: "Загрузка…",
     disruption: "Изменения в движении", disruptions: (n, l) => `Изменения в движении (${n}): ${l}`,
@@ -283,7 +291,7 @@ const I18N = {
     docTitle: "Abfahrten", title: "Abfahrten 🏠",
     sub: "13086 Berlin-Weißensee · Live-Daten von BVG/VBB · inkl. Fußweg",
     loading: "Lade…", updating: "Aktualisiere…", live: s => `Live · aktualisiert vor ${s}s`,
-    hideMissed: "Nicht erreichbare ausblenden", refresh: "↻ Aktualisieren", refreshTitle: "Jetzt aktualisieren", themeTitle: "Hell / Dunkel",
+    hideMissed: "Nicht erreichbare ausblenden", refresh: "↻ Aktualisieren", refreshTitle: "Jetzt aktualisieren", themeTitle: "Dunkles Design",
     wxAria: "Wetter", wxLoading: "Wetter lädt…", wxNA: "Wetter nicht verfügbar",
     wxRain: "Niederschlag", wxToday: "Heute", wxSun: "Sonne", mm: "mm",
     rainChance: n => `${n}% in den nächsten 3 h`, rainNow: "jetzt",
@@ -291,8 +299,8 @@ const I18N = {
     sunSetAt: t => `Untergang ${t}`, sunRoseAt: t => `Aufgang war ${t}`, sunTomorrow: t => `morgen · heute ↓ ${t}`,
     cancelled: "fällt aus", missed: "verpasst", goNow: "Jetzt los!", goIn: n => `Los in ${n}′`,
     more: n => `▾ ${n} weitere`, less: "▴ Weniger",
-    tripTitle: "Weg zu Barfer's", car: "🚗 Auto · über A10", pt: "🚆 Öffis",
-    arrive: t => `Ankunft ${t}`, km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", trafficExtra: n => `+${n}′ durch Verkehr`, trafficFree: "freie Fahrt", freeTime: n => `ohne Verkehr ${n}′`, openMaps: "In Karten öffnen ↗",
+    tripTitle: "Weg zu Barfer's", car: "🚗 Auto · über A10", pt: "🚆 Öffis · 255 › S2",
+    arrive: t => `Ankunft ${t}`, departNow: "Abfahrt jetzt", plusWalk: "+10′ zu Fuß", optionsMore: "Verbindungen ▾", optionsLess: "Weniger ▴", km: k => `${k} km`, noTraffic: "übliche Fahrzeit, ohne Verkehrslage", trafficExtra: n => `+${n}′ durch Verkehr`, trafficFree: "freie Fahrt", freeTime: n => `ohne Verkehr ${n}′`, openMaps: "In Karten öffnen ↗",
     leaveIn: n => n <= 0 ? "jetzt los" : `los in ${n}′`, myRoute: "Meine Route (255 › S2)", others: "Alternativen",
     faster: (c, t) => `⚡ schneller: ${c} · Ankunft ${t}`, myDisrupted: "⚠ Störung auf deiner Route — siehe Alternativen", noConn: "Keine Verbindungsdaten",
     inclWalk: "inkl. ~10′ Fußweg ab S Marienfelde", cancelledShort: "fällt aus", loadingShort: "Lade…",
@@ -321,6 +329,7 @@ function applyLang(){
   document.title = t.docTitle;
   document.querySelectorAll("[data-i18n]").forEach(el => { el.innerHTML = t[el.dataset.i18n]; });
   document.querySelectorAll("[data-i18n-title]").forEach(el => { el.title = t[el.dataset.i18nTitle]; });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t[el.dataset.i18nAria]); });
   document.getElementById("wx").setAttribute("aria-label", t.wxAria);
   document.querySelectorAll(".lang button").forEach(b => {
     const on = b.dataset.lang === lang;
@@ -629,11 +638,19 @@ document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
 });
 document.getElementById("theme").onclick = () => {
   const r = document.documentElement;
-  const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  r.dataset.theme = dark ? "light" : "dark";
-  try { localStorage.setItem("theme", r.dataset.theme); } catch (e) {}
+  const toDark = r.dataset.theme !== "dark";
+  if (toDark) r.dataset.theme = "dark"; else delete r.dataset.theme;
+  try { localStorage.setItem("theme2", toDark ? "dark" : "light"); } catch (e) {}
+  syncThemeBtn();
 };
-try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+// Light is the default; dark only when chosen with the switch (new key, so older saved choices reset to light)
+try { if (localStorage.getItem("theme2") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+function syncThemeBtn(){
+  const dark = document.documentElement.dataset.theme === "dark", b = document.getElementById("theme");
+  b.textContent = dark ? "☀︎" : "☾";
+  b.setAttribute("aria-pressed", dark ? "true" : "false");
+}
+syncThemeBtn();
 
 // ---- Weather (Open-Meteo, no key needed) ----
 const WX_ICON = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",56:"🌧️",57:"🌧️",
@@ -757,34 +774,53 @@ function routeDisrupted(x, now){
 }
 function renderTrip(){
   const t = T(), now = new Date();
+  // Both tiles share one layout: title · travel time · arrival · when to start · details · hint · action
+  const tileHtml = o => `<div class="trip-k">${o.title}</div>
+    <div class="trip-big">${o.big}</div>
+    <div class="trip-arr">${o.arr}</div>
+    <div class="trip-sub">${o.start}</div>
+    <div class="trip-sub trip-det">${o.det}</div>
+    ${o.hint ? `<div class="trip-alt">${o.hint}</div>` : ""}
+    <div class="trip-foot">${o.action}</div>`;
+  const dash = { big: "–", arr: "&nbsp;", start: "&nbsp;", det: "&nbsp;" };
+  const nf = n => n.toLocaleString(lang === "ru" ? "ru-RU" : "de-DE");
   // car
-  $("carTile").innerHTML = `<div class="trip-k"><span>${t.car}</span></div>` + (car
-    ? `<div class="trip-big">${car.min}′<small>${t.arrive(hm(new Date(now.getTime() + car.min * 60000)))}</small></div>
-       <div class="trip-sub">${t.km(car.km.toLocaleString(lang === "ru" ? "ru-RU" : "de-DE"))} · ${car.live
-          ? `<span class="tr ${car.extra > 15 ? "bad" : car.extra > 5 ? "mid" : "ok"}">${car.extra > 0 ? t.trafficExtra(car.extra) : t.trafficFree}</span> · ${t.freeTime(car.free)}`
-          : t.noTraffic}</div>`
-    : `<div class="trip-sub">${t.loadingShort}</div>`)
-    + `<a class="maps-btn" href="${MAPS_URL}" target="_blank" rel="noopener">${t.openMaps}</a>`;
+  const mapsBtn = `<a class="trip-action" href="${MAPS_URL}" target="_blank" rel="noopener">${t.openMaps}</a>`;
+  $("carTile").innerHTML = tileHtml(car ? {
+      title: t.car,
+      big: `${car.min}′`,
+      arr: t.arrive(hm(new Date(now.getTime() + car.min * 60000))),
+      start: t.departNow,
+      det: `${t.km(nf(car.km))} · ` + (car.live
+        ? `<span class="tr ${car.extra > 15 ? "bad" : car.extra > 5 ? "mid" : "ok"}">${car.extra > 0 ? t.trafficExtra(car.extra) : t.trafficFree}</span>`
+        : t.noTraffic),
+      action: mapsBtn
+    } : Object.assign({ title: t.car, action: mapsBtn }, dash, { start: t.loadingShort }));
   // public transport
   const tile = $("ptTile"), panel = $("ptPanel");
-  tile.setAttribute("aria-expanded", ptOpen ? "true" : "false");
   const upcoming = arr => arr.filter(x => (x.leaveAt - now) / 60000 > -1);
   const mine = upcoming(pt.mine), alts = upcoming(pt.alts).sort((a, b) => a.arrive - b.arrive);
-  const head = `<div class="trip-k"><span>${t.pt}</span><span>${ptOpen ? "▴" : "▾"}</span></div>`;
-  if (!pt.loaded){ tile.innerHTML = head + `<div class="trip-sub">${pt.failed ? t.noConn : t.loadingShort}</div>`; panel.hidden = true; return; }
-  const next = mine.filter(x => !x.cancelled)[0] || mine[0];
-  let body = "";
-  if (next){
+  const optBtn = `<button class="trip-action" id="ptToggle" aria-expanded="${ptOpen ? "true" : "false"}" aria-controls="ptPanel">${ptOpen ? t.optionsLess : t.optionsMore}</button>`;
+  const next = pt.loaded ? (mine.filter(x => !x.cancelled)[0] || mine[0]) : null;
+  if (!next){
+    tile.innerHTML = tileHtml(Object.assign({ title: t.pt, action: optBtn }, dash, { start: pt.loaded || pt.failed ? t.noConn : t.loadingShort }));
+    panel.hidden = !ptOpen || !pt.loaded;
+  } else {
     const leave = Math.floor((next.leaveAt - now) / 60000);
-    body = `<div class="trip-big">${esc(t.leaveIn(leave))}</div>
-      ${chainHtml(next.lines)}
-      <div class="trip-sub">${t.arrive(hm(next.arrive))} · ${next.dur}′ · ${t.inclWalk}</div>`;
     const bestAlt = alts.filter(x => !x.cancelled)[0];
-    if (routeDisrupted(next, now)) body += `<div class="trip-alt">${t.myDisrupted}</div>`;
+    let hint = "";
+    if (routeDisrupted(next, now)) hint = t.myDisrupted;
     else if (bestAlt && bestAlt.arrive <= next.arrive - 5 * 60000)
-      body += `<div class="trip-alt">${esc(t.faster(bestAlt.lines.map(l => l.name).join(" › "), hm(bestAlt.arrive)))}</div>`;
-  } else body = `<div class="trip-sub">${t.noConn}</div>`;
-  tile.innerHTML = head + body;
+      hint = esc(t.faster(bestAlt.lines.map(l => l.name).join(" › "), hm(bestAlt.arrive)));
+    tile.innerHTML = tileHtml({
+      title: t.pt,
+      big: `${next.dur}′`,
+      arr: t.arrive(hm(next.arrive)),
+      start: `${esc(t.leaveIn(leave))} (${hm(next.leaveAt)})`,
+      det: chainHtml(next.lines).replace('class="trip-chain"', 'class="trip-chain inline"') + ` <span>${t.plusWalk}</span>`,
+      hint, action: optBtn
+    });
+  }
   // expanded panel
   panel.hidden = !ptOpen;
   if (ptOpen){
@@ -797,7 +833,11 @@ function renderTrip(){
       ${alts.length ? `<h4>${t.others}</h4>${alts.slice(0, 3).map(row).join("")}` : ""}`;
   }
 }
-$("ptTile").onclick = () => { ptOpen = !ptOpen; renderTrip(); };
+$("ptTile").addEventListener("click", ev => {
+  if (!ev.target.closest || !ev.target.closest("#ptToggle")) return;
+  ptOpen = !ptOpen; renderTrip();
+  const b = document.getElementById("ptToggle"); if (b) b.focus();
+});
 loadCar(); setInterval(() => { if (!document.hidden) loadCar(); }, 5 * 60000);
 loadPT(); setInterval(loadPT, 2 * 60000);
 setInterval(renderTrip, 15000);
